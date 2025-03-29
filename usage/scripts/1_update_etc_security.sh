@@ -2,6 +2,7 @@
 
 cfg_dir=/etc/security
 
-echo -e "user1\t\t\t/home/user1 \nadmin1\t\t\t/home/admin1" >> /etc/security/chroot.conf
+echo -e "$1\t\t\t/home/$1" >> /etc/security/chroot.conf
+#echo -e "$2\t\t\t/home/$2" >> /etc/security/chroot.conf
 
 echo "done."
