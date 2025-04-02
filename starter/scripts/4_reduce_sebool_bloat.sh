@@ -3,11 +3,8 @@
 bad_bools=(
   "abrt_handle_event"
   "abrt_upload_watch_anon_write"
-#  "boinc_execmem"
   "cron_userdomain_transition"
   "daemons_dontaudit_scheduling"
-#  "domain_fd_use"
-#  "domain_kernel_load_modules"
   "entropyd_use_audio"
   "gluster_export_all_rw"
   "gssd_read_tmp"
@@ -18,7 +15,6 @@ bad_bools=(
   "postgresql_selinux_unconfined_dbadm"
   "postgresql_selinux_users_ddl"
   "logging_syslogd_use_tty"
-#  "mcelog_exec_scripts"
   "mount_anyfile"
   "mozilla_plugin_can_network_connect"
   "named_write_master_zones"
@@ -43,10 +39,7 @@ bad_bools=(
   "virt_sandbox_use_all_caps"
   "virt_sandbox_use_audit"
   "virt_use_usb"
-#  "virtqemud_use_execmem"
   "xdm_manage_bootloader"
-#  "xend_run_blktap"
-#  "xend_run_qemu"
   "xguest_connect_network"
   "xguest_mount_media"
   "xguest_use_bluetooth"
@@ -71,3 +64,4 @@ for b in "${exec_bools[@]}"; do
 done
 
 echo "done."
+

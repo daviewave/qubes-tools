@@ -8,5 +8,4 @@
 
 ./scripts/4_reduce_sebool_bloat.sh
 
-
 echo "done."

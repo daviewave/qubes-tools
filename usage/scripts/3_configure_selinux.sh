@@ -18,3 +18,4 @@ restorecon -R /home/$user
 echo "$admin:exclusive" >> /etc/security/sepermit.conf
 
 echo "done."
+
