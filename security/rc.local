@@ -15,10 +15,19 @@
 #  systemctl --no-block restart cups
 
 #1, uninstall and disable cups
-sudo dnf remove --noautoremove cups-filesystem python3-cups tinyproxy openssh speech-dispatcher vpnc xl2tpd tpm2-tools libvpl tslib wireplumber
+sudo dnf remove --noautoremove python3-cups tinyproxy openssh speech-dispatcher \ 
+  vpnc xl2tpd tpm2-tools libvpl tslib wireplumber vim-common vim-enhanced vulkan-loader libvdpau \
+  usb_modeswitch 
 
-rm -rf /etc/cups /etc/ssh /etc/speech-dispatcher /etc/vpnc /etc/xl2tpd /etc/tpm2-tss /etc/vpl /etc/vconsole.conf /etc/ts.conf /etc/wireplumber
+rm -rf /etc/cups /etc/ssh /etc/speech-dispatcher /etc/vpnc /etc/xl2tpd /etc/tpm2-tss /etc/vpl \
+  /etc/vconsole.conf /etc/ts.conf /etc/wireplumber /etc/vimrc /etc/vulkan \
+  /etc/vdpau_wrapper.cfg /etc/usb_modeswitch.conf /etc/tmpfiles.d /etc/unbound/ \
+  /etc/trusted-key.key tmpfiles.d/ krb5.conf*  openfortivpn/ csh.* \
+  /etc/reader.conf.d /etc/systemd/ /etc/swid /etc/sestatus.conf /etc/services \
+  /etc/ /etc /etc /etc /etc /etc
 
+#echo -e "failure_action = log" | sudo tee libaudit.conf > /dev/null
+echo -e "failure_action = terminate" | sudo tee libaudit.conf > /dev/null
 
 sudo systemctl stop sys-fs-fuse-connections.mount
 sudo systemctl mask sys-fs-fuse-connections.mount
