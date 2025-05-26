@@ -8,7 +8,8 @@ fi
 echo "(4/6) adding kali gpg key and repo source...."
 
 #1,
-sudo cp "${qbp}/config/proxychains.conf" /etc
+sudo rm -rf /etc/proxychains4.conf
+sudo cp "${st}/config/proxychains.conf" /etc
 
 #2,
 sudo proxychains4 wget https://archive.kali.org/archive-keyring.gpg -O "${archive_keyring}/kali-archive-keyring.gpg"
