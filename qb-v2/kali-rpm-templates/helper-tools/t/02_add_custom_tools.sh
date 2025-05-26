@@ -7,19 +7,18 @@ fi
 
 rm -rf /home/user/QubesIncoming
 
-
-
-echo "(2/8) adding custom tools..."
+echo "(2/6) adding custom tools..."
 
 #1, my tools
-cd "${st}"
+cd $st
 cp builders/curr.yml "${qbp}/builder.yml" 
 chmod +x ${stht}/*
 cp -r "${st}/helper-tools/" "${qbp}/helper-tools"
 mv "${qbp}/helper-tools/generate-container-image.sh" "${qbp}/tools"
 
+
 #2, additional pkgs
 sudo apt install wget proxychains4
 
-echo "(2/8) done."
+echo "(2/6) done."
 

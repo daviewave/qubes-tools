@@ -5,7 +5,7 @@ if [ $? -eq 1 ]; then
   exit 1
 fi
 
-echo "(4/8) adding kali gpg key and repo source...."
+echo "(4/6) adding kali gpg key and repo source...."
 
 #1,
 sudo cp "${qbp}/config/proxychains.conf" /etc
@@ -15,7 +15,7 @@ sudo proxychains4 wget https://archive.kali.org/archive-keyring.gpg -O "${archiv
 
 #3,
 echo -e '\n\n'
-echo -e '!!!WARNING!!!! have to manually create and add the next line to /etc/apt/sources.list.d/kali.list: """'
+echo -e '!!!!WARNING!!!! have to manually create and add the next line to /etc/apt/sources.list.d/kali.list: """'
 echo -e 'deb [signed-by=/usr/share/keyrings/kali-archive-keyring.gpg] https://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware\n"""'
 
-echo -e '\n(4/8) done. \n'
+echo -e '\n(4/6) done. \n'

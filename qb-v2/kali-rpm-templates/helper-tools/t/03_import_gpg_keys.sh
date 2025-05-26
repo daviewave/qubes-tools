@@ -12,9 +12,10 @@ function proxy_gpg_key_fetch(){
   wget $search_url -e use_proxy=on -e https_proxy=$https_proxy -O ./$key_file
   gpg --import ./$key_file
   gpg --edit-key $key_id
+  mv $key_file $trusted_gpgs
 }
 
-echo "(3/8) adding qubes master key, release signing key (4.3), & debian pkgs signing key..."
+echo "(3/6) adding qubes master key, release signing key (4.3), & debian pkgs signing key..."
 
 #-a-> qubes master sk
 gpg --import "${qmsk_fp}"
@@ -32,4 +33,4 @@ proxy_gpg_key_fetch $qdsk
 
 sudo bash "${qbpht}/update.sh" fix
 
-echo "(3/8) done."
+echo "(3/6) done."
