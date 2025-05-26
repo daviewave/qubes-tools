@@ -24,10 +24,20 @@ rm -rf /etc/cups /etc/ssh /etc/speech-dispatcher /etc/vpnc /etc/xl2tpd /etc/tpm2
   /etc/vdpau_wrapper.cfg /etc/usb_modeswitch.conf /etc/tmpfiles.d /etc/unbound/ \
   /etc/trusted-key.key tmpfiles.d/ krb5.conf*  openfortivpn/ csh.* \
   /etc/reader.conf.d /etc/systemd/ /etc/swid /etc/sestatus.conf /etc/services \
-  /etc/ /etc /etc /etc /etc /etc
+  /etc/rsyncd.conf /etc/rc.d/ /etc/printcap /etc/networks /etc/motd.d/ /etc/motd \
+  /etc/modules-load.d/ /etc/host.conf /etc/exports /etc/gss /etc/inittab /etc/kernel \
+  /etc/dnsmasq* /etc/credstore* /etc/binfmt.d /etc/bindresvport.blacklist /etc/ppp/ \
+  /etc/samba/ /etc/pkcs11/ /etc/openvpn/ /etc/openldap/ /etc/ld.so.c* /etc/smi.conf \
+  /etc/openal/ /etc/terminfo/ /etc/pulse/ /etc/sasl2/ /etc/makedumpfile.conf.sample \
+  /etc/libssh/ /etc/dsniff/ /etc/
 
 #echo -e "failure_action = log" | sudo tee libaudit.conf > /dev/null
-echo -e "failure_action = terminate" | sudo tee libaudit.conf > /dev/null
+echo "failure_action = terminate" | sudo tee libaudit.conf > /dev/null
+echo -e "IPv4\t\t0800\t\t#Internet IP (IPv4)\nARP\t\t0806\t\tether-arp\nLOOP\t\t9000\t\tloopback" | sudo tee /etc/ethertypes
+sudo sed -i '10d' /etc/fstab
+sudo sed -i '16d' /etc/fstab
+sudo sed -i '2d' /etc/adjtime
+echo "UTC" | sudo tee -a /etc/adjtime > /dev/null
 
 sudo systemctl stop sys-fs-fuse-connections.mount
 sudo systemctl mask sys-fs-fuse-connections.mount
