@@ -15,9 +15,9 @@
 #  systemctl --no-block restart cups
 
 #1, uninstall and disable cups
-sudo dnf remove --noautoremove cups-filesystem python3-cups tinyproxy openssh speech-dispatcher vpnc xl2tpd
+sudo dnf remove --noautoremove cups-filesystem python3-cups tinyproxy openssh speech-dispatcher vpnc xl2tpd tpm2-tools libvpl tslib wireplumber
 
-rm -rf /etc/cups /etc/ssh /etc/speech-dispatcher /etc/vpnc /etc/xl2tpd /etc
+rm -rf /etc/cups /etc/ssh /etc/speech-dispatcher /etc/vpnc /etc/xl2tpd /etc/tpm2-tss /etc/vpl /etc/vconsole.conf /etc/ts.conf /etc/wireplumber
 
 
 sudo systemctl stop sys-fs-fuse-connections.mount
