@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# This script will be executed at every VM startup, you can place your own
+# custom commands here. This includes overriding some configuration in /etc,
+# starting services etc.
+#
+# Executable scripts located in /rw/config/rc.local.d with the extension
+# '.rc' are executed immediately before this rc.local.
+# Example:
+#  /rw/config/rc.local.d/custom.rc
+#
+# Example for overriding the whole CUPS configuration:
+#  rm -rf /etc/cups
+#  ln -s /rw/config/cups /etc/cups
+#  systemctl --no-block restart cups
+
+#1, uninstall and disable cups
+sudo dnf remove --noautoremove cups-filesystem python3-cups tinyproxy openssh speech-dispatcher vpnc xl2tpd
+
+rm -rf /etc/cups /etc/ssh /etc/speech-dispatcher /etc/vpnc /etc/xl2tpd /etc
+
+
+sudo systemctl stop sys-fs-fuse-connections.mount
+sudo systemctl mask sys-fs-fuse-connections.mount
+sudo systemctl stop remote-cryptsetup.target
+sudo systemctl stop remote-cryptsetup.target
+sudo systemctl stop remote-fs.target
+sudo systemctl mask remote-fs.target
