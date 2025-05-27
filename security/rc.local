@@ -1,0 +1,79 @@
+#!/bin/sh
+
+# This script will be executed at every VM startup, you can place your own
+# custom commands here. This includes overriding some configuration in /etc,
+# starting services etc.
+#
+# Executable scripts located in /rw/config/rc.local.d with the extension
+# '.rc' are executed immediately before this rc.local.
+# Example:
+#  /rw/config/rc.local.d/custom.rc
+#
+# Example for overriding the whole CUPS configuration:
+#  rm -rf /etc/cups
+#  ln -s /rw/config/cups /etc/cups
+#  systemctl --no-block restart cups
+
+# too many:
+# vulkan-loader libvdpau libssh openssh krb5 openldap gssdp wireplumber pulseaudio-libs (anything related to pulse)
+# cyrus-sasl-lib
+
+#maybe samba-common-libs
+
+#1, uninstall bloat
+sudo dnf remove --noautoremove python3-cups tinyproxy openssh speech-dispatcher tinyproxy openssh speech-dispatcher vim-common vim-enhanced \
+  vim-data mesa-vulkan-drivers sshpass libssh2 openssh-askpass openfortivpn rsync system-config-printer-libs openvpn vpnc vpnc-script libsmi libsmbclient \
+  samba-common-libs samba-client-libs openal-soft dsniff strongswan polkit-pkla-compat kismet kdump-utils infiniband-diags atril libglvnd-gles geoclue2 \
+  blueman NetworkManager-bluetooth fuse3 fuse3-common nikto gdb-headless
+
+
+#2, remove configs for remote access and other unused stuff
+rm -rf /etc/cups /etc/ssh /etc/speech-dispatcher /etc/vpnc /etc/xl2tpd /etc/tpm2-tss 
+/etc/vpl /etc/vconsole.conf /etc/ts.conf /etc/wireplumber /etc/vimrc /etc/vulkan \
+/etc/vdpau_wrapper.cfg /etc/usb_modeswitch.conf /etc/tmpfiles.d /etc/unbound/ \
+/etc/trusted-key.key tmpfiles.d/ krb5.conf* openfortivpn/ csh.* /etc/reader.conf.d \
+/etc/systemd/ /etc/swid /etc/sestatus.conf /etc/services /etc/rsyncd.conf  /etc/rc.d/ \
+/etc/printcap /etc/networks /etc/motd.d/ /etc/motd /etc/modules-load.d/ /etc/host.conf \
+/etc/exports /etc/gss /etc/inittab /etc/kernel /etc/dnsmasq* /etc/credstore* \
+/etc/binfmt.d /etc/bindresvport.blacklist /etc/ppp/ /etc/samba/ /etc/pkcs11/ \ 
+/etc/openvpn/ /etc/openldap/ /etc/ld.so.c* /etc/smi.conf /etc/openal/ /etc/terminfo/ \
+/etc/pulse/ /etc/sasl2/ /etc/makedumpfile.conf.sample /etc/libssh/ /etc/dsniff/ \
+/etc/strongswan/ /etc/polkit-1/ /etc/statetab.d/ /etc/sysconfig/ /etc/sgml/ \
+/etc/passim.conf /etc/kismet/ /etc/kdump* /etc/infiniband-diags/ /etc/glvnd/ \
+/etc/geoclue/ /etc/bluetooth/ /etc/alsa/ /etc/asound.conf /etc/avahi/ /etc/fuse.conf \
+/etc/gdbinit* /etc/abrt/ /etc/cni/ /etc/conntrackd/ /etc/DIR_COLORS /etc/alternatives/ \
+/etc/cron.daily/ /etc/nikto/ /etc/depmod.d/ /etc/gcrypt/ /etc/ipsec.* /etc/issue* \
+/etc/libnl/ /etc/debuginfod/ /etc/GREP_COLORS /etc/DIR_COLORS* /etc/Trolltech.conf \
+/etc/depmod.d/ /etc/magic /etc/mailcap
+
+
+# 3, still cleaning up configs just less straight forward
+sudo rm -rf /etc/modprobe.d/kvm.conf /etc/modprobe.d/vhost.conf
+sudo rm -rf /etc/default/pcscd
+#echo -e "failure_action = log" | sudo tee libaudit.conf > /dev/null
+echo "failure_action = terminate" | sudo tee libaudit.conf > /dev/null
+echo -e "IPv4\t\t0800\t\t#Internet IP (IPv4)\nARP\t\t0806\t\tether-arp\nLOOP\t\t9000\t\tloopback" | sudo tee /etc/ethertypes
+sudo sed -i '10d' /etc/fstab
+sudo sed -i '16d' /etc/fstab
+sudo sed -i '2d' /etc/adjtime
+echo "UTC" | sudo tee -a /etc/adjtime > /dev/null
+sudo sed -i '55d' /etc/NetworkManager/NetworkManager.conf
+sudo sed -i 's|missingok||g' /etc/logrotate.d/*
+sudo sed -i 's|daily|monthly|g' /etc/logrotate.d/*
+sudo sed -i 's|#compress|compress|g' /etc/logrotate.conf
+#sudo sed -i '2d' 
+#sudo sed -i '3d'
+
+# 4, stop and mask sus systemctl services
+sudo systemctl stop sys-fs-fuse-connections.mount
+sudo systemctl mask sys-fs-fuse-connections.mount
+sudo systemctl stop remote-cryptsetup.target
+sudo systemctl stop remote-cryptsetup.target
+sudo systemctl stop remote-fs.target
+sudo systemctl mask remote-fs.target
+
+
+#== MANUAL ==#
+# 1, update /etc/default
+# 2, fix login.defs
+
