@@ -16,7 +16,6 @@ chmod +x ${stht}/*
 cp -r "${st}/helper-tools/" "${qbp}/helper-tools"
 mv "${qbp}/helper-tools/generate-container-image.sh" "${qbp}/tools"
 
-
 #2, additional pkgs
 sudo apt install wget proxychains4
 

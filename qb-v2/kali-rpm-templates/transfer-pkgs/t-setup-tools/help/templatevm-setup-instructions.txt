@@ -1,0 +1,121 @@
+#== pre req's ==#
+- created template with the debian-template.txt instructions
+
+
+#-- notes --#
+- appears like kali packages are more updated and aligned with trixie
+- !i think upgrading deb-bookworm to deb-trixie after step 8 could make a lot of sense!
+- make individual script for step 8
+- would be much more ideal to wait until step 7 is complete to generate the users local gpg key (so can use upgraded, 2 years newer, gnupg)
+- the first ~15 steps should be done in the template vm setup
+
+
+#== process ==#
+1, clone debian-12-xfce qbkt-12
+2, give a lot of space in root then run as user
+3, clone qubes-builderv2 git repo into /opt
+4, copy custom qb/ tools from dom0 into /opt
+5,   import the following gpg keys with ultimate trust
+	-> qubes master signing key
+	-> qubes release 4.3 signing key
+	-> qubes 4.3 debian packages signing key
+2,   update && upgrade
+3,   create gpg key for user
+4,   update && upgrade
+5,   fetch (new) kali-archive-keyring.gpg file 
+6,   create kali.list sources.list.d/ --> make sure to specify signed-by is location from prev step
+7,   update && upgrade *--> make sure to add --fix-broken flag in update command (~1400 package upgrade)
+8,   systemctl restart <services listed at end of step 8 upgrade>
+9,   sudo apt --fix-broken install lintian
+10,  restart services
+11,  update && upgrade
+12,  restart services
+13,  re-install deps-debian.txt
+14,  run test -f and git submodule commands
+12,  update && upgrade
+14, 
+
+
+
+#== cmds ==#
+#=* 1
+#-a,
+gpg --import /usr/share/qubes/qubes-master-key.asc
+gpg --edit-key <qmsk id> #(trust 5)
+sudo sed -i 's|qubes-archive-keyring-4.3.gpg|qubes-archive-keyring.gpg|g' /etc/apt/sources.list.d/qubes-r4.list
+sudo rm /usr/share/keyrings/qubes-archive-keyring.gpg
+sudo rm /usr/share/keyrings/qubes-archive-keyring.gpg
+gpg --export 720415900AB8C804 | sudo tee /usr/share/keyrings/qubes-archive-keyring.gpg > /dev/null
+
+#-b 
+gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys 720415900AB8C804
+gpg --edit-key 720415900AB8C804  #(trust 5)
+#gpg --keyserver-options no-self-sigs-only,no-import-clean --fetch-keys https://keys.qubes-os.org/keys/qubes-release-4.3-signing-key.asc
+#gpg --edit-key <release signing key id> #(trust 5)
+
+#-c
+gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys ED65462EC8D5E4C5
+gpg --edit-key ED65462EC8D5E4C5 #(trust 5)
+
+
+#=* 2
+sudo apt update -y && sudo apt upgrade -y
+
+#=* 3
+gpg --full-generate-key
+
+#=* 4
+sudo apt update -y && sudo apt upgrade -y
+
+#=* 5
+sudo curl https://archive.kali.org/archive-keyring.gpg -o /usr/share/keyrings/kali-archive-keyring.gpg
+sudo echo "deb [signed-by=/usr/share/keyrings/kali-archive-keyring.gpg] https://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware" > /etc/apt/sources.list.d/kali.list
+
+#=* 6
+sudo apt update -y
+sudo apt --fix-broken upgrade -y
+
+#=* 7
+./restart_services.sh
+
+#=* 8
+sudo apt --fix-broken install lintian
+
+#=* 9
+./restart_services.sh
+
+#=* 10
+sudo apt update -y
+sudo apt --fix-broken upgrade -y
+
+#=* 11
+cd /opt/qubes-builderv2
+sudo apt install $(cat dependencies-debian.txt)
+test -f /usr/share/qubes/marker-vm && sudo apt install qubes-gpg-split
+git submodule update --init
+
+#=* 12
+sudo apt update -y
+sudo apt --fix-broken upgrade -y
+
+#=* 13
+./restart_services.sh
+
+#=* 13
+
+
+#=* 14
+
+#=* 14
+
+#=* 15
+
+#=* 16
+
+#=* 17
+
+#=* 18
+
+#=* 19
+
+#=* 20

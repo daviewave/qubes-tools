@@ -1,0 +1,25 @@
+1, clone debian-12-xfce 
+2, updated gui settings before starting
+    -> (basic) color (purple for templates)
+    -> (basic) priv main:128Gib && storage:4Gib
+    -> (adv) memory balancing: DISABLED
+    -> (adv) memory: 120000MiB
+    -> (adv) VCPUs: 7
+3, started new vm opening an xfce terminal
+4, copied setup tools from dom0 # NOTE TO SELF: fixed error in 2nd script
+5, from within templatevm mv tools from default transfer location to /opt
+6, moved to setup tools dir and exported an environ var as $PWD for easier navigation, then moved to scripts dir
+7, ran 1 script which failed because template vms are not connected to the internet unless proxy vars that 
+    redirect to designated proxyvm -- moved the script i have for this into dir for future use
+8, successfully re-ran 1st script cloning builder repo after starting proxyvm (copied with desired user:user ownership)
+9, had a good idea of setting more general paths in the env.sh script to make cleaner and reduce chance of error
+10, lots of changes but wanted to remind myself that i added proxychains + wget when trying to figure out how to proxy gpg keyservers
+	-> NOTE: pretty sure i can safely remove proxychains
+
+
+
+
+#== additional pkgs ==#
+- wget
+- proxychains4 
+  --> new config file in conf

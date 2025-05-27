@@ -7,6 +7,8 @@ fi
 
 echo "(5/6) major update & upgrade (~1500 pkgs)..."
 
+sudo apt upgrade gnupg
+sudo apt --fix-broken install lintian
 ./update.sh fix
 ./restart_services.sh
 
