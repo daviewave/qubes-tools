@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #1, uninstall bloat
-sudo apt remove avahi-daemon libavahi-core7 libavahi-glib1 python3-cups cups cups-common cups-server-common \
+sudo apt remove rmt  avahi-daemon libavahi-core7 libavahi-glib1 python3-cups cups cups-common cups-server-common \
 		cups cups-common cups-server-common openssh-client speech-dispatcher openssh-client vim-tiny vim-common \
 		vim-common vim-nox libssh-4 libssh-gcrypt-4 vim-runtime mesa-vulkan-drivers speech-dispatcher pkexec \
 		system-config-printer-common exfat-fuse libldb2 libsnmp-base libsmbclient libsmbclient python3-smbc libfmt9 \
@@ -12,8 +12,9 @@ sudo apt remove avahi-daemon libavahi-core7 libavahi-glib1 python3-cups cups cup
 		ghostscript groff-base imagemagick-6-common libmagickcore-6.q16-6 *init.d ipp-usb libldap-common libao-common libao4 
 		libibverbs1 ibverbs-providers libnl-3-200 libnl-genl-3-200 libnl-route-3-200 libpaper1 libpaper-utils libreoffice-core
 		libreoffice-base-core libreoffice-common librevenge-0.0-0 libreoffice-style-colibre libregexp-ipv6-perl lightdm
+		locales-all python-babel-localedata libencode-locale-perl lvm2 liblvm2cmd2.03 lynx-common libmailtools-perl thunderbird
+		modemmanager 
 *pipewire \
-		
 
 sudo apt autoremove
 sudo apt update -y && sudo apt upgrade -y
@@ -27,9 +28,10 @@ to_remove=(adduser.conf alsa alternatives apache2 apparmor apparmor.d apt/apt.co
 						ghostscript glvnd groff gss host.conf hosts.allow hosts.deny ifplugd ImageMagick-6
 						ipp-usb issue issue.net kernel ld.so.cache ld.so.conf ld.so.conf.d ldap libao.conf
 						libibverbs1 ibverbs-providers libnl-3 libpaper.d libreoffice libreport lightdm lighttpd
-						locale.alias 
+						locale.alias locale.gen logcheck logrotate.d lvm lynx machine-id magic magic.mime
+						mailcap mailcap.order mime.types mke2fs.conf ModemManager motd modules-load.d 
 
-#?? gimp iproute2 ld.so.co* 
+#?? gimp iproute2 ld.so.co* xfce-mailwatch-plugin mime-support NetworkManager*
 
 
 			ssh speech-dispatcher xl2tpd tpm2-tss vconsole.conf
@@ -57,6 +59,28 @@ done
 
 #-- hosts --#
 echo -e "127.0.0.1\tlocalhost" | sudo tee /etc/hosts > /dev/null
+
+#-- nanorc --#
+# NOTE: need to add the coloring back in
+echo -e "set locking \nset stateflags \nset tabsize 2" | sudo tee /etc/nanorc > /dev/null
+
+#-- netconfig --#
+nfl1="udp\ttpi_clts\tv\tinet\tudp\t-\t-"
+nfl2="tcp\ttpi_cots_ord\tv\tinet\ttcp\t-\t-"
+nfl3="local\ttpi_cots_ord\t-\tloopback\t-\t-\t-"
+nfl4="unix\ttpi_cots_ord\t-\tloopback\t-\t-\t-"
+echo -e "$nfl1 \n$nfl2 \n$nfl3 \n$nfl4" | sudo tee /etc/netconfig > /dev/null
+
+#-- nsswitch.conf --#
+sudo sed -i 's|mdns4_minimal ||g' /etc/nsswitch.conf
+sudo sed -i 's|[NOTFOUND=return] ||g' /etc/nsswitch.conf
+sudo sed -i 's|db ||g' /etc/nsswitch.conf
+sudo sed -i 's|netgroup:||g' /etc/nsswitch.conf
+sudo sed -i 's|nis||g' /etc/nsswitch.conf
+sudo sed -i 's|winbind ||g' /etc/nsswitch.conf
+sudo sed -i 's|ldap ||g' /etc/nsswitch.conf
+sudo sed -i 's|hesiod ||g' /etc/nsswitch.conf
+sudo sed -i 's|wins ||g' /etc/nsswitch.conf
 
 
 
@@ -108,6 +132,10 @@ sudo systemctl mask remote-fs.target
 	- why no-debsign ?
 	- weird debug url in origins
 - e2scrub: configure to log and email fs issues
+- fuse:
+  - umount /sys/fs/fuse/connections
+	- modeprobe -r <pkg>
+	- chmod 000 /dev/<pkg>
 - grub.d/: test what happens when files removed using dispvm
 - gshadow: learn syntax & how gpasswd cli works
 - initramfs-tools/: research what current conf is doing
@@ -116,18 +144,50 @@ sudo systemctl mask remote-fs.target
 	- hidden users (nobody nobody4 noaccess)
 	- vnc server info
 	- keys
+- login.defs: go through current configuration, determine desired config & automate
+- logrotate.conf: add code to edit config
+- network/: learn what the code is doing in & and if i need it for vms to connect
+	- resolved: is manipulating dns
+	- bridge
+	- wpa_supplicant
 
 
-#- requires research
+#================================================#
+#==*** SET UP DNS RESOLVING IN SYS-FIREWALL ***==#
+#================================================#
+
+#- requires research and dispvm tests
+-* ADD A MODPROBE BLACKLIST SECTION *-
+	-> /etc/modprobe.d
+	-> /etc/modules
+
+- /var/lib/* --> for storing variable 'state' information like db's
+	- polkit-1/
+		- localauhority/10-vendor.d/org.freedesktop.NetworkManager.pkla
+	- aspell/
+	- dbus/
+
+- automate the changes to use db for credential storage	
+
+- there are so many locale files, something is 100% going on there
+
 -* add something to disable wifi roaming *-
 
--* ADD A MODPROBE BLACKLIST SECTION *-
-	- fuse:
-	  - umount /sys/fs/fuse/connections
-		- modeprobe -r <pkg>
-		- chmod 000 /dev/<pkg>
-
 - (in fedora) dnf config files
+
+- look into all pkgs listed with "dpkg -l | grep -i 'freedesktop'"
+
+- NetworkManager is unused, can it be removed?
+	- if it needs to stay, add code to this file to edit the conf to remove the unamanged devices
+	- /etc/network also appears to be unused, try removing
+
+- determine if /etc/networks can be removed without affecting connection - link-local is highly sus
+
+-* create nftables files (do this after completly finishing everything above) *-
+
+- go through systemctl services in depth
+
+- go through running processes in depth (ps aux)
 
 #** IMPORTANT **#
 # - why tf is there a /etc/dnf in my ubuntu vm ????
