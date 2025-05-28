@@ -1,0 +1,17 @@
+#-- overview --#
+- by default nss stores credentials for passwd, group, shadow, and gshadow in /etc clear text files
+- not secure, so want to use berkely db's instead with special nss db packages instead
+
+#-- setup --#
+#->(debian)
+	- install 'libnss-db' with apt
+	- after installing, go to /var/lib/misc
+	- compile the Makefile
+	- edit /etc/nsswitch.conf to use 'db' & prevent files from being used
+
+#->(fedora)
+	- install 'nss_db' with dnf
+	- after installing go to /var/lib/misc
+	- use makedb cli to build db files 
+		- command needs to specify the input file to use as a template for db generation
+		- ex cmd: makedb /etc/passwd ./passwd.db
