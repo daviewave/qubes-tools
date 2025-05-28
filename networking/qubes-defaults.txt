@@ -1,0 +1,11 @@
+#=== qubes firewall ===#
+- when you first start a new qube and enter a terminal and enter nft list ruleset, there is a default configuration
+		that correctly routes the inbound traffic (though likely in a 'get it to work way' that could greatly benefit
+		from adding more security rules.
+
+- the default config file is with '/etc/dhclient.d/qubes-setup-dnat-to-ns.sh' and given that dnat is for port forwarding
+		and going through the code, this adds custom dns routing as well
+
+- i disable ipv6 from my router so removing all ipv6 rules for now makes sense.
+
+

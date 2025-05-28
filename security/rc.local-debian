@@ -1,0 +1,133 @@
+#!/bin/sh
+
+#1, uninstall bloat
+sudo apt remove avahi-daemon libavahi-core7 libavahi-glib1 python3-cups cups cups-common cups-server-common \
+		cups cups-common cups-server-common openssh-client speech-dispatcher openssh-client vim-tiny vim-common \
+		vim-common vim-nox libssh-4 libssh-gcrypt-4 vim-runtime mesa-vulkan-drivers speech-dispatcher pkexec \
+		system-config-printer-common exfat-fuse libldb2 libsnmp-base libsmbclient libsmbclient python3-smbc libfmt9 \
+		libwbclient0 gir1.2-polkit-1.0 policykit-1 polkitd-pkla libwbclient0 atril libfuse2 libfuse3-3 fuse3 \
+		dbus-user-session libdbus-glib-1-2 libnet-dbus-perl libqt5dbus5 
+		
+
+		ghostscript groff-base imagemagick-6-common libmagickcore-6.q16-6 *init.d ipp-usb libldap-common libao-common libao4 
+		libibverbs1 ibverbs-providers libnl-3-200 libnl-genl-3-200 libnl-route-3-200 libpaper1 libpaper-utils libreoffice-core
+		libreoffice-base-core libreoffice-common librevenge-0.0-0 libreoffice-style-colibre libregexp-ipv6-perl lightdm
+*pipewire \
+		
+
+sudo apt autoremove
+sudo apt update -y && sudo apt upgrade -y
+
+
+#2, remove configs for remote access and other unused stuff
+#(unsure) ca-certificates
+to_remove=(adduser.conf alsa alternatives apache2 apparmor apparmor.d apt/apt.conf.d/70debconf avahi
+						bash_completion.d bindresvport.blacklist binfmt.d chatscripts cups cupshelpers dbus-1
+						deluser.conf dictionaries-common dnf emacs environment environment.d fuse.conf gai.conf
+						ghostscript glvnd groff gss host.conf hosts.allow hosts.deny ifplugd ImageMagick-6
+						ipp-usb issue issue.net kernel ld.so.cache ld.so.conf ld.so.conf.d ldap libao.conf
+						libibverbs1 ibverbs-providers libnl-3 libpaper.d libreoffice libreport lightdm lighttpd
+						locale.alias 
+
+#?? gimp iproute2 ld.so.co* 
+
+
+			ssh speech-dispatcher xl2tpd tpm2-tss vconsole.conf
+			ts.conf wireplumber vimrc vulkan vdpau_wrapper.cfg tmpfiles.d
+			usb_modeswitch.conf unbound trusted-key.key tmpfiles.d systemd
+			swid sestatus.conf services networks motd modules-load.d host.conf
+			exports gss inittab kernel polkit-1 statetab.d sysconfig sgml
+			binfmt.d bindresvport.blacklist ppp samba pkcs11 ldap ld.so.cache
+			ld.so.conf ld.so.conf.d openal terminfo	pulse sasl2 libssh alsa
+			geoclue bluetooth asound.conf avahi fuse.conf abrt conntrackd
+			cron.daily depmod.d gcrypt issue issue.net debuginfod
+			depmod.d magic mailcap cni libnl )
+
+for pkg in "${to_remove[@]}";
+do
+  sudo rm -rf /etc/$pkg
+done
+
+
+#-- grub.d --#
+for cfg in "30_os-prober" "40_custom" "41_custom";
+do
+	sudo rm -rf /etc/grub.d/$cfg
+done
+
+#-- hosts --#
+echo -e "127.0.0.1\tlocalhost" | sudo tee /etc/hosts > /dev/null
+
+
+
+#-- misc --#
+sudo rm -rf /lib/init
+
+
+
+# 3, /etc/default is gonna need its own section
+# 4, also need to go back to dconf in both as i failed to understnad its importance originally
+
+
+
+
+
+# 3, still cleaning up configs just less straight forward
+sudo rm -rf modprobe.d/kvm.conf modprobe.d/vhost.conf
+sudo rm -rf default/pcscd
+#echo -e "failure_action = log" | sudo tee libaudit.conf > /dev/null
+echo "failure_action = terminate" | sudo tee /etc/libaudit.conf > /dev/null
+echo -e "IPv4\t\t0800\t\t#Internet IP (IPv4)\nARP\t\t0806\t\tether-arp\nLOOP\t\t9000\t\tloopback" | sudo tee ethertypes
+sudo sed -i '10d' fstab
+sudo sed -i '16d' fstab
+sudo sed -i '2d' adjtime
+echo "UTC" | sudo tee -a adjtime > /dev/null
+sudo sed -i '55d' NetworkManager/NetworkManager.conf
+sudo sed -i 's|missingok||g' logrotate.d/*
+sudo sed -i 's|daily|monthly|g' logrotate.d/*
+sudo sed -i 's|#compress|compress|g' logrotate.conf
+#sudo sed -i '2d' 
+#sudo sed -i '3d'
+
+# 4, stop and mask sus systemctl services
+sudo systemctl stop sys-fs-fuse-connections.mount
+sudo systemctl mask sys-fs-fuse-connections.mount
+sudo systemctl stop remote-cryptsetup.target
+sudo systemctl stop remote-cryptsetup.target
+sudo systemctl stop remote-fs.target
+sudo systemctl mask remote-fs.target
+
+
+
+#== todo ==#
+- handle/config /etc/default
+- automate fix dhclient.d/ dnat script
+- dhcp *this looks really sus*
+	- rfc file in subdirectory
+- dpkg
+	- why no-debsign ?
+	- weird debug url in origins
+- e2scrub: configure to log and email fs issues
+- grub.d/: test what happens when files removed using dispvm
+- gshadow: learn syntax & how gpasswd cli works
+- initramfs-tools/: research what current conf is doing
+- libblockdev/: do i need all the fs types listed in the conf
+- lightdm/: explicitly shows:
+	- hidden users (nobody nobody4 noaccess)
+	- vnc server info
+	- keys
+
+
+#- requires research
+-* add something to disable wifi roaming *-
+
+-* ADD A MODPROBE BLACKLIST SECTION *-
+	- fuse:
+	  - umount /sys/fs/fuse/connections
+		- modeprobe -r <pkg>
+		- chmod 000 /dev/<pkg>
+
+- (in fedora) dnf config files
+
+#** IMPORTANT **#
+# - why tf is there a /etc/dnf in my ubuntu vm ????

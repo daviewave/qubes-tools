@@ -1,0 +1,14 @@
+
+1, import signing key
+	-> rpm --import https://packages.microsoft.com/keys/microsoft.asc
+
+2, add repo source to yum config
+	-> sudo nano /etc/yum.repos.d/vscode.repo 
+	-> paste in: `
+[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enables=1
+gpgcheck=1
+gpgkey=file:///home/da/.gnupg/public-keys.d/microsoft.asc
+`
