@@ -37,7 +37,7 @@ This is going to be an in depth walkthrough detailing exactly how the dns poison
 		which returned the file '/etc/dhclient.d/qubes-setup-dnat-to-ns.sh' -- i put this command output in 
 		evidence/my-investigation/locating-roque-default-rules. i had found the file that was configuring these strange
 		rules, and after going through its code it quickly became apparent that: 
-      1) despite containing the '.sh' file extension that define shell scripts, it was contained python code
+      			1) despite containing the '.sh' file extension that define shell scripts, it was contained python code
 					and instructions to use a the '/usr/bin/python3' executable to run the code
 			2) its file name did not indicate it was responsible for setting firewall rules upon system startup
 			3) the code contained 3 functions -- the first 2 'get_dns_resolv_conf()' & 'get_dns_resolved()' contained logic
