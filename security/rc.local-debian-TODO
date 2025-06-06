@@ -1,0 +1,68 @@
+#== todo ==#
+- apt/: need to make a custom section after learning how it functions
+- dhclient.d/qubes-setup-dnat-to-ns: edit script by
+    - removing dns poisoning function
+    - ensure the nftable function doesnt add dns poisoning rules
+-dhcp/:
+  - dont think debug file is needed
+  - what is the exit-hooks.d cfg files doing
+  - go over dhclient.conf settings and learn whats best
+- e2scrub: configure to log and email fs issues
+- gshadow: learn syntax & how gpasswd cli works
+- initramfs-tools/: research what current conf is doing
+- libblockdev/: do i need all the fs types listed in the conf
+- lightdm/: explicitly shows:
+  - hidden users (nobody nobody4 noaccess)
+  - vnc server info
+  - keys
+- login.defs: go through current configuration, determine desired config & automate
+- logrotate.conf: add code to edit config
+- polkit-1/: does removing qubes allow all rule do anything ? if so, change to more restrictive
+- qubes/: lots of config files to go through
+- qubes-rpc/: lots of config files to go through
+- resolv.conf: leave nameservers set to current values but keep in mind when doing nftables rules
+- security/: learn about its usage and how the current config files work
+- selinux/: by default, debian uses apparmor instead of selinux. at some point need to make selinux default and configure
+- sudoers(.d/): need to understand the syntax and review rules to ensure secure configuration
+- sysctl.conf(.d/): configure secure settings
+- systemd/: lots of stuff to learn and configure here
+- terminfo/: since all terminals dont support the same stuff, this shows what the terminal can do
+  - /lib/terminfo/*
+  - /usr/share/terminfo
+- wpa_supplicant/:
+  - what are these scripts doing
+  - can they be removed?
+- X11/: what is its role in my current setup, is it for remote access ?
+- xattr.conf: what are the following settings doing?
+  - nfs4
+  - Beagle
+  - evm
+  - AFS
+- xen/: important! learn what each config is doing and whats actually needed in non dom0 vms
+
+
+#== requires more research/testing ==#
+#- requires research and dispvm tests
+-* ADD A MODPROBE BLACKLIST SECTION *-
+  -> /etc/modprobe.d
+  -> /etc/modules
+- /var/lib/* --> for storing variable 'state' information like db's
+  - polkit-1/
+    - localauhority/10-vendor.d/org.freedesktop.NetworkManager.pkla
+  - aspell/
+  - dbus/
+- automate the changes to use db for credential storage 
+- there are so many locale files, something is 100% going on there
+-* add something to disable wifi roaming *-
+- (in fedora) dnf config files
+- look into all pkgs listed with "dpkg -l | grep -i 'freedesktop'"
+- NetworkManager is unused, can it be removed?
+  - if it needs to stay, add code to this file to edit the conf to remove the unamanged devices
+  - /etc/network also appears to be unused, try removing
+- determine if /etc/networks can be removed without affecting connection - link-local is highly sus
+-* create nftables files (do this after completly finishing everything above) *-
+- go through systemctl services in depth
+- go through running processes in depth (ps aux)
+#** IMPORTANT **#
+# - why tf is there a /etc/dnf in my ubuntu vm ????
+

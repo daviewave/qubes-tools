@@ -1,55 +1,76 @@
 #!/bin/sh
 
-#1, uninstall bloat
-sudo apt remove rmt  avahi-daemon libavahi-core7 libavahi-glib1 python3-cups cups cups-common cups-server-common \
-		cups cups-common cups-server-common openssh-client speech-dispatcher openssh-client vim-tiny vim-common \
-		vim-common vim-nox libssh-4 libssh-gcrypt-4 vim-runtime mesa-vulkan-drivers speech-dispatcher pkexec \
-		system-config-printer-common exfat-fuse libldb2 libsnmp-base libsmbclient libsmbclient python3-smbc libfmt9 \
-		libwbclient0 gir1.2-polkit-1.0 policykit-1 polkitd-pkla libwbclient0 atril libfuse2 libfuse3-3 fuse3 \
-		dbus-user-session libdbus-glib-1-2 libnet-dbus-perl libqt5dbus5 
-		
+export http_proxy=http://127.0.0.1:8082
+export https_proxy=http://127.0.0.1:8082
 
-		ghostscript groff-base imagemagick-6-common libmagickcore-6.q16-6 *init.d ipp-usb libldap-common libao-common libao4 
-		libibverbs1 ibverbs-providers libnl-3-200 libnl-genl-3-200 libnl-route-3-200 libpaper1 libpaper-utils libreoffice-core
-		libreoffice-base-core libreoffice-common librevenge-0.0-0 libreoffice-style-colibre libregexp-ipv6-perl lightdm
-		locales-all python-babel-localedata libencode-locale-perl lvm2 liblvm2cmd2.03 lynx-common libmailtools-perl thunderbird
-		modemmanager 
-*pipewire \
+sudo apt update -y
 
-sudo apt autoremove
+#=== 1. apt pkgs ===# (-> ghostscript is first added)
+sudo apt remove avahi-daemon libavahi-core7 libavahi-glib1 python3-cups cups \
+	cups-common cups-server-common cups-daemon openssh-client speech-dispatcher \
+	openssh-client vim-tiny vim-common vim-common vim-nox libssh-4 exfat-fuse \
+	libssh-gcrypt-4 vim-runtime mesa-vulkan-drivers speech-dispatcher pkexec \
+	system-config-printer-common libldb2 libsnmp-base libsmbclient libsmbclient \
+	python3-smbc libfmt9 libwbclient0 gir1.2-polkit-1.0 policykit-1 polkitd-pkla \
+	libwbclient0 atril libfuse2 libfuse3-3 fuse3 dbus-user-session libdbus-glib-1-2 \
+	libnet-dbus-perl libqt5dbus5 ghostscript groff-base imagemagick-6-common \
+	libmagickcore-6.q16-6 ipp-usb libldap-common libao-common libao4 libpaper1 \
+	libibverbs1 ibverbs-providers libnl-3-200 libnl-genl-3-200 libnl-route-3-200 \
+	libpaper-utils libreoffice-core	libreoffice-base-core libreoffice-common \
+	librevenge-0.0-0 libreoffice-style-colibre libregexp-ipv6-perl lightdm \
+	locales-all python-babel-localedata libencode-locale-perl lvm2 liblvm2cmd2.03 \
+	lynx-common libmailtools-perl thunderbird	modemmanager libopenal-data libopenni2-0 \
+	libpaper1 atmel-firmware libnet-dbus-perl libnet-http-perl libnet-smtp-ssl-perl \
+	libnet-ssleay-perl ppp libpulse-mainloop-glib0 libpulsedsp man-db pipewire-pulse \
+	pulseaudio pulseaudio-utils xfce4-pulseaudio-plugin	libsane-common libsane1 \
+	sane-airscan sane-utils xsane xsane-common sgml-data python3-sgmllib3k libsnmp-base \
+	libsnmp40	speech-dispatcher-audio-plugins sound-icons python3-speechd libsonic0 \
+	libspeechd2 libopencore-amrnb0 libopencore-amrwb0	libgsm1 espeak-ng-data \
+	libespeak-ng1 libssh-4 libssh-gcrypt-4 openssh-client ssl-cert libio-socket-ssl-perl \
+	perl-openssl-defaults thunderbird timgm6mb-soundfont libfluidsynth3 libtry-tiny-perl \
+	firmware-realtek vim-common vim-runtime mesa-vulkan-drivers docbook-xml libruby3.1 \
+	gimp-data libgimp2.0 pipewire-bin pipewire-pulse libpipewire-0.3-modules \
+	libpipewire-0.3-common gnome-terminal-data gnome-accessibility-themes gnome-icon-theme \
+	gnome-keyring libpam-gnome-keyring gnome-themes-extra-data pinentry-gnome3 \
+	libsoup-gnome2.4-1 xfce4-mailwatch-plugin
+
+sudo apt autoremove && sudo apt clean
 sudo apt update -y && sudo apt upgrade -y
 
 
-#2, remove configs for remote access and other unused stuff
-#(unsure) ca-certificates
-to_remove=(adduser.conf alsa alternatives apache2 apparmor apparmor.d apt/apt.conf.d/70debconf avahi
-						bash_completion.d bindresvport.blacklist binfmt.d chatscripts cups cupshelpers dbus-1
-						deluser.conf dictionaries-common dnf emacs environment environment.d fuse.conf gai.conf
-						ghostscript glvnd groff gss host.conf hosts.allow hosts.deny ifplugd ImageMagick-6
-						ipp-usb issue issue.net kernel ld.so.cache ld.so.conf ld.so.conf.d ldap libao.conf
-						libibverbs1 ibverbs-providers libnl-3 libpaper.d libreoffice libreport lightdm lighttpd
-						locale.alias locale.gen logcheck logrotate.d lvm lynx machine-id magic magic.mime
-						mailcap mailcap.order mime.types mke2fs.conf ModemManager motd modules-load.d 
-
-#?? gimp iproute2 ld.so.co* xfce-mailwatch-plugin mime-support NetworkManager*
-
-
-			ssh speech-dispatcher xl2tpd tpm2-tss vconsole.conf
-			ts.conf wireplumber vimrc vulkan vdpau_wrapper.cfg tmpfiles.d
-			usb_modeswitch.conf unbound trusted-key.key tmpfiles.d systemd
-			swid sestatus.conf services networks motd modules-load.d host.conf
-			exports gss inittab kernel polkit-1 statetab.d sysconfig sgml
-			binfmt.d bindresvport.blacklist ppp samba pkcs11 ldap ld.so.cache
-			ld.so.conf ld.so.conf.d openal terminfo	pulse sasl2 libssh alsa
-			geoclue bluetooth asound.conf avahi fuse.conf abrt conntrackd
-			cron.daily depmod.d gcrypt issue issue.net debuginfod
-			depmod.d magic mailcap cni libnl )
+#=== 2. /etc cfgs ===#
+to_remove=(
+	adduser.conf alsa apache2 apparmor apparmor.d avahi
+	bash_completion.d bindresvport.blacklist binfmt.d
+	chatscripts cups cupshelpers dbus-1 deluser.conf dictionaries-common
+	dnf dpkg emacs environment environment.d fuse.conf gai.confghostscript
+	gimp glvnd groff gss host.conf hosts.allow hosts.deny ifplugd
+	ImageMagick-6 iproute2 ipp-usb issue issue.net kernel ld.so.cache
+	ld.so.conf ld.so.conf.d ldap libao.conf libibverbs1 ibverbs-providers
+	libnl-3 libpaper.d libreoffice libreport lightdm lighttpd locale.alias
+	locale.gen logcheck logrotate.d lvm lynx machine-id magic magic.mime
+	mailcap manpath.config mailcap.order mime.types mke2fs.conf ModemManager
+	motd modules-load.d needrestart nftables.conf NetworkManager network
+	networks netconfig openal openni2 opt os-release pam.conf papersize
+	pcmcia perl plymouth ppp profile profile.d protocols pulse python3.11
+	qubes-suspend-module-blacklist rc0.d rc1.d rc2.d rc3.d rc4.d rc5.d
+	rc6.d rcS.d rmt rpc salt sane.d sensors.d services sgml snmp sensors3.conf
+	sensors.d speech-dispatcher ssh sudo.conf sudo_logsrvd.conf terminfo
+	thunderbird timidity tmpfiles.d ufw update-motd.d usb_modeswitch.d
+	vdpau_wrapper.cfg vim vulkan
+)
 
 for pkg in "${to_remove[@]}";
 do
   sudo rm -rf /etc/$pkg
 done
 
+#===* make sure /var/lib/misc/db files are created
+
+
+#=== 3. CUSTOM /etc cfg actions ===#
+#-- apt --#
+# apt/apt.conf.d/70debconf and more research needed
 
 #-- grub.d --#
 for cfg in "30_os-prober" "40_custom" "41_custom";
@@ -57,12 +78,44 @@ do
 	sudo rm -rf /etc/grub.d/$cfg
 done
 
+#-- default --#
+
+
+#-- fstab --#
+usrlocal_mount=$(grep -n "/usr/local" /etc/gstab | head -n 1 | cut -d ':' -f1)
+removable_mount=$(grep -n "/mnt/removable" /etc/gstab | head -n 1 | cut -d ':' -f1)
+if [ -n "$usrlocal_mount" ]; then
+  rmv_line="${usrlocal_mount}d"
+  sudo sed -i "${rmv_line}" /etc/gstab
+fi
+
+if [ -n "$removable_mount" ]; then
+  rmv_line="${removable_mount}d"
+  sudo sed -i "${rmv_line}" /etc/gstab
+fi
+
+#-- ethertypes --#
+#echo -e "IPv4\t\t0800\t\t#Internet IP (IPv4)\nARP\t\t0806\t\tether-arp\nLOOP\t\t9000\t\tloopback" | sudo tee ethertypes
+
 #-- hosts --#
 echo -e "127.0.0.1\tlocalhost" | sudo tee /etc/hosts > /dev/null
+
+#-- libaudit.conf --#
+echo "failure_action = log" | sudo tee /etc/libaudit.conf > /dev/null
+
+#--* ld.so.* --#
+sudo ldconfig # update since deleted configs earlier
+
+#-- logrotate.d --#
+for cfg in "alternatives" "cups-daemon" "ppp" "sane-utils" "speech-dispatcher"; 
+do
+	sudo rm -rf /etc/logrotate.d/$cfg
+done
 
 #-- nanorc --#
 # NOTE: need to add the coloring back in
 echo -e "set locking \nset stateflags \nset tabsize 2" | sudo tee /etc/nanorc > /dev/null
+
 
 #-- netconfig --#
 nfl1="udp\ttpi_clts\tv\tinet\tudp\t-\t-"
@@ -72,122 +125,63 @@ nfl4="unix\ttpi_cots_ord\t-\tloopback\t-\t-\t-"
 echo -e "$nfl1 \n$nfl2 \n$nfl3 \n$nfl4" | sudo tee /etc/netconfig > /dev/null
 
 #-- nsswitch.conf --#
-sudo sed -i 's|mdns4_minimal ||g' /etc/nsswitch.conf
-sudo sed -i 's|[NOTFOUND=return] ||g' /etc/nsswitch.conf
-sudo sed -i 's|db ||g' /etc/nsswitch.conf
-sudo sed -i 's|netgroup:||g' /etc/nsswitch.conf
-sudo sed -i 's|nis||g' /etc/nsswitch.conf
-sudo sed -i 's|winbind ||g' /etc/nsswitch.conf
-sudo sed -i 's|ldap ||g' /etc/nsswitch.conf
-sudo sed -i 's|hesiod ||g' /etc/nsswitch.conf
-sudo sed -i 's|wins ||g' /etc/nsswitch.conf
+echo -e "passwd:\t\tdb \ngroup:\t\tdb \nshadow:\t\tdb \ngshadow:\t\tdb \nhosts:\t\tdns files" | sudo tee /etc/nsswitch.conf > /dev/null
+
+#-- pam.d --#
+for cfg in "chfn" "chpasswd" "chsh" "cron" "cups" "lightdm" "lightdm-autologin" "lightdm-greeter" "other" "ppp" "qrexec" "runuser" "runuser-l" "su-l" "sudo-i";
+do
+	sudo rm -rf /etc/pam.d/$cfg
+done
+
+#-- polkit-1 --#
+
+#-- skel/ --#
+for cfg in ".face" ".face.icon";
+do
+	sudo rm -rf /etc/skel/$cfg
+done
+
+#-- timezone --#
+echo "UTC" | sudo tee /etc/timezone > /dev/null
+
+#-- udev --#
+sudo rm -rf /etc/udev.conf /etc/udev/rules.d/72-seat-input-platform-pcspkr.rules
+
+#-- udisks2 --#
+sudo sed -i 's|encryption=luks1|encryption=luks2|g' /etc/udisks2/udisks2.conf
+
+#-- UPower --#
+sudo sed -i 's|NoPollBatteries=false|NoPollBatteries=true|g' /etc/UPower/UPower.conf
+sudo sed -i 's|IgnoreLid=false|IgnoreLid=true|g' /etc/UPower/UPower.conf
+sudo sed -i 's|UsePercentageForPolicy=true|UsePercentageForPolicy=false|g' /etc/UPower/UPower.conf
+
+#-- usb_modeswitch.conf --#
+sudo sed -i 's|DisableSwitching=0|DisableSwitching=1|g' /etc/usb_modeswitch.conf
+sudo sed -i 's|DisableMBIMGlobal=0|DisableMBIMGlobal=1|g' /etc/usb_modeswitch.conf
+sudo sed -i 's|EnableLogging=0|EnableLogging=1|g' /etc/usb_modeswitch.conf
+sudo sed -i 's|#SetStorageDelay=4||g' /etc/usb_modeswitch.conf
+sudo sed -i 's|HuaweiAltModeGlobal=0||g' /etc/usb_modeswitch.conf
 
 
 
-#-- misc --#
-sudo rm -rf /lib/init
-
-
-
-# 3, /etc/default is gonna need its own section
-# 4, also need to go back to dconf in both as i failed to understnad its importance originally
-
-
-
-
-
-# 3, still cleaning up configs just less straight forward
-sudo rm -rf modprobe.d/kvm.conf modprobe.d/vhost.conf
-sudo rm -rf default/pcscd
-#echo -e "failure_action = log" | sudo tee libaudit.conf > /dev/null
-echo "failure_action = terminate" | sudo tee /etc/libaudit.conf > /dev/null
-echo -e "IPv4\t\t0800\t\t#Internet IP (IPv4)\nARP\t\t0806\t\tether-arp\nLOOP\t\t9000\t\tloopback" | sudo tee ethertypes
-sudo sed -i '10d' fstab
-sudo sed -i '16d' fstab
-sudo sed -i '2d' adjtime
-echo "UTC" | sudo tee -a adjtime > /dev/null
-sudo sed -i '55d' NetworkManager/NetworkManager.conf
-sudo sed -i 's|missingok||g' logrotate.d/*
-sudo sed -i 's|daily|monthly|g' logrotate.d/*
-sudo sed -i 's|#compress|compress|g' logrotate.conf
-#sudo sed -i '2d' 
-#sudo sed -i '3d'
-
-# 4, stop and mask sus systemctl services
-sudo systemctl stop sys-fs-fuse-connections.mount
+#=== 4. systemctl ===#
 sudo systemctl mask sys-fs-fuse-connections.mount
 sudo systemctl stop remote-cryptsetup.target
 sudo systemctl stop remote-cryptsetup.target
 sudo systemctl stop remote-fs.target
 sudo systemctl mask remote-fs.target
 
+#=== 5. mounts ===#
+#- umount /sys/fs/<mountpoint>
+#- modeprobe -r <pkg>
+#- chmod 000 /dev/<pkg>
+
+#-- fuse --#
+umount /sys/fs/fuse
+modeprobe -r fuse
+chmod 000 /dev/fuse
 
 
-#== todo ==#
-- handle/config /etc/default
-- automate fix dhclient.d/ dnat script
-- dhcp *this looks really sus*
-	- rfc file in subdirectory
-- dpkg
-	- why no-debsign ?
-	- weird debug url in origins
-- e2scrub: configure to log and email fs issues
-- fuse:
-  - umount /sys/fs/fuse/connections
-	- modeprobe -r <pkg>
-	- chmod 000 /dev/<pkg>
-- grub.d/: test what happens when files removed using dispvm
-- gshadow: learn syntax & how gpasswd cli works
-- initramfs-tools/: research what current conf is doing
-- libblockdev/: do i need all the fs types listed in the conf
-- lightdm/: explicitly shows:
-	- hidden users (nobody nobody4 noaccess)
-	- vnc server info
-	- keys
-- login.defs: go through current configuration, determine desired config & automate
-- logrotate.conf: add code to edit config
-- network/: learn what the code is doing in & and if i need it for vms to connect
-	- resolved: is manipulating dns
-	- bridge
-	- wpa_supplicant
+#=== 6.  /lib ===#
+sudo rm -rf /lib/init
 
-
-#================================================#
-#==*** SET UP DNS RESOLVING IN SYS-FIREWALL ***==#
-#================================================#
-
-#- requires research and dispvm tests
--* ADD A MODPROBE BLACKLIST SECTION *-
-	-> /etc/modprobe.d
-	-> /etc/modules
-
-- /var/lib/* --> for storing variable 'state' information like db's
-	- polkit-1/
-		- localauhority/10-vendor.d/org.freedesktop.NetworkManager.pkla
-	- aspell/
-	- dbus/
-
-- automate the changes to use db for credential storage	
-
-- there are so many locale files, something is 100% going on there
-
--* add something to disable wifi roaming *-
-
-- (in fedora) dnf config files
-
-- look into all pkgs listed with "dpkg -l | grep -i 'freedesktop'"
-
-- NetworkManager is unused, can it be removed?
-	- if it needs to stay, add code to this file to edit the conf to remove the unamanged devices
-	- /etc/network also appears to be unused, try removing
-
-- determine if /etc/networks can be removed without affecting connection - link-local is highly sus
-
--* create nftables files (do this after completly finishing everything above) *-
-
-- go through systemctl services in depth
-
-- go through running processes in depth (ps aux)
-
-#** IMPORTANT **#
-# - why tf is there a /etc/dnf in my ubuntu vm ????
