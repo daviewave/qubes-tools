@@ -1,0 +1,24 @@
+#!/usr/sbin/nft -f
+
+table ip6 qubes {
+	chain prerouting {
+		type filter hook prerouting priority -300; policy drop;
+	}
+
+	chain input {
+		type filter hook input priority -300; policy drop;
+	}
+
+	chain forward {
+		type filter hook forward priority -300; policy drop;
+	}
+
+	chain output {
+		type filter hook output priority -300; policy drop;
+	}
+
+	chain postrouting {
+		type filter hook postrouting priority -300; policy drop;
+	}
+}
+
