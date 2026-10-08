@@ -1,22 +1,23 @@
 #!/bin/bash
-
-os=$1
+set -euo pipefail
+. "$(dirname "$0")/lib/common.sh"
 
 install_on_fedora(){
-  sudo dnf config-manager addrepo --from-repofile=https://repository.mullvad.net/rpm/stable/mullvad.repo
-  sudo dnf install mullvad-browser
+  if dnf --version 2>/dev/null | grep -q '^dnf5'; then
+    sudo dnf config-manager addrepo --overwrite --from-repofile=https://repository.mullvad.net/rpm/stable/mullvad.repo
+  else
+    sudo dnf config-manager --add-repo https://repository.mullvad.net/rpm/stable/mullvad.repo
+  fi
+  sudo dnf install -y mullvad-browser
 }
 
 install_on_debian(){
-  sudo curl -fsSLo /usr/share/keyrings/mullvad-keyring.asc https://repository.mullvad.net/deb/mullvad-keyring.asc
-  echo "deb [signed-by=/usr/share/keyrings/mullvad-keyring.asc arch=$( dpkg --print-architecture )] https://repository.mullvad.net/deb/stable stable main" | sudo tee /etc/apt/sources.list.d/mullvad.list
+  curl -fsSL https://repository.mullvad.net/deb/mullvad-keyring.asc | sudo tee /usr/share/keyrings/mullvad-keyring.asc > /dev/null
+  echo "deb [signed-by=/usr/share/keyrings/mullvad-keyring.asc arch=$( dpkg --print-architecture )] https://repository.mullvad.net/deb/stable stable main" | sudo tee /etc/apt/sources.list.d/mullvad.list > /dev/null
   sudo apt update
-  sudo apt install mullvad-vpn
+  sudo apt install -y mullvad-browser
 }
 
-if [[ -z "$os" || "$os" == "fedora"  ]]; then
-  install_on_fedora
-else
-  install_on_debian
-fi
-
+os=$(resolve_os "${1:-}")
+use_updates_proxy_if_template
+"install_on_$os"

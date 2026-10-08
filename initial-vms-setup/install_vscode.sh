@@ -1,33 +1,36 @@
 #!/bin/bash
-
-os=$1
+set -euo pipefail
+. "$(dirname "$0")/lib/common.sh"
 
 install_on_fedora(){
-  sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+  local key
+  key=$(mktemp)
+  curl -fsSL https://packages.microsoft.com/keys/microsoft.asc -o "$key"
+  sudo rpm --import "$key"
+  rm -f "$key"
 
-  sudo sh -c 'echo -e "[code]
-  name=Visual Studio Code
-  baseurl=https://packages.microsoft.com/yumrepos/vscode
-  enabled=1
-  gpgcheck=1
-  gpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
+  sudo tee /etc/yum.repos.d/vscode.repo > /dev/null <<'REPO'
+[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+REPO
 
-  sudo dnf install code
+  sudo dnf install -y code
 }
 
 install_on_debian(){
-  wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
-  sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
-  rm microsoft.gpg
+  curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/microsoft.gpg > /dev/null
+  sudo chmod 644 /usr/share/keyrings/microsoft.gpg
 
-  sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
+  echo "deb [arch=$( dpkg --print-architecture ) signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
 
   sudo apt update
-  sudo apt install code
+  sudo apt install -y code
 }
 
-if [[ -z "$os" || "$os" == "fedora"  ]]; then
-  install_on_fedora
-else
-  install_on_debian
-fi
+os=$(resolve_os "${1:-}")
+use_updates_proxy_if_template
+"install_on_$os"
