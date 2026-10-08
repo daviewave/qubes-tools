@@ -1,52 +1,48 @@
 #!/bin/bash
+set -euo pipefail
 
-vms=(
-  "Domain-0"
-  "sys-usb"
-  "dda"
-  "ddt"
-  "def-d"
-  "def-disp"
-  "default-dvm"
-  "fedora-41-xfce"
-  "fwt"
-  "net-starter"
-  "sna"
-  "snt"
-  "starter"
-  "sys-firewall"
-  "sys-net"
-  "sys-whonix"
-  "whonix-gateway-17"
-  "whonix-workstation-17"
+out_dir="${XML_DIR:-./vm-xmls}"
+
+if [ $# -gt 0 ]; then
+  vms=("$@")
+else
+  mapfile -t vms < <(sudo virsh -c xen:/// list --all --name | grep -v '^$')
+fi
+
+edits=(
+  "s|console=hvc0| |g"
+  "s|rd_NO_PLYMOUTH| |g"
+  "s|rd.plymouth.enable=0| |g"
+  "s|clocksource=tsc| |g"
+  "s|xen_scrub_pages=0|xen_scrub_pages=1|g"
+  "s|swiotlb=2048| |g"
+  "s|<boot dev='cdrom'>| |g"
+  "s|type='rom'|readonly='yes'|g"
+  "s|<pae/>||g"
+  "s|<viridian/>| |g"
+  "s|<acpi/>| |g"
+  #"s|mode='host-passthrough'| |g"
+  "s|<feature policy='disable' name='svm'/>||g"
+  "s|<feature policy='disable' name='vmx'/>|<feature policy='require' name='vmx'/>|g"
+  "s|<feature policy='require' name='invtsc'/>||g"
+  "s|<clock offset='utc' adjustment='reset'>|<clock>|g"
+  "s|<timer name='tsc' mode='native'/>|<timer mode='native'/> |g"
+  "s|<on_reboot>destroy</on_reboot>| |g"
+  "s|<video>||g"
+  "s|</video>||g"
+  "s|<model type='vga' vram='16384' heads='1' primary='yes'/>||g"
+  "s|<memballoon model='xen'/>||g"
 )
 
-for vm in "${vms[@]}"; do
-  sudo virsh dumpxml $vm > ./vm-xmls/$vm.xml
+sed_args=()
+for e in "${edits[@]}"; do
+  sed_args+=(-e "$e")
 done
 
-sed -i  "s|console=hvc0| |g" ./vm-xmls/*
-sed -i  "s|rd_NO_PLYMOUTH| |g" ./vm-xmls/*
-sed -i  "s|rd.plymouth.enable=0| |g" ./vm-xmls/*
-sed -i  "s|clocksource=tsc| |g" ./vm-xmls/*
-sed -i  "s|xen_scrub_pages=0|xen_scrub_pages=1|g" ./vm-xmls/*
-sed -i  "s|swiotlb=2048| |g" ./vm-xmls/*
-sed -i  "s|<boot dev='cdrom'>| |g" ./vm-xmls/*
-sed -i  "s|type='rom'|readonly='yes'|g" ./vm-xmls/*
-sed -i  "s|</pae>||g" ./vm-xmls/*
-sed -i  "s|<viridian/>| |g" ./vm-xmls/*
-sed -i  "s|<apci/>| |g" ./vm-xmls/*
-#sed -i  "s|mode='host-passthrough'| |g" ./vm-xmls/*
-sed -i  "s|<feature policy='disable' name='svm'/>||g" ./vm-xmls/*
-sed -i  "s|<feature policy='disable' name='vmx'/>|<feature policy='require' name='vmx'/>|g" ./vm-xmls/*
-sed -i  "s|<feature policy='require' name='invtsc'/>||g" ./vm-xmls/*
-sed -i  "s|<clock offset='utc' adjustment='reset'>|<clock>|g" ./vm-xmls/*
-sed -i  "s|<timer name='tsc' mode='native'/>|<timer mode='native'/> |g" ./vm-xmls/*
-sed -i  "s|<on_reboot>destroy</on_reboot>| |g"  ./vm-xmls/*
-sed -i  "s|<video>||g" ./vm-xmls/*
-sed -i  "s|</video>||g" ./vm-xmls/*
-sed -i  "s|<model type='vga' vram='16384' heads='1' primary='yes'/>||g" ./vm-xmls/*
-sed -i  "s|<memballoon model='xen'/>||g" ./vm-xmls/*
-
+mkdir -p "$out_dir"
+for vm in "${vms[@]}"; do
+  sudo virsh -c xen:/// dumpxml "$vm" > "$out_dir/$vm.xml"
+  sed -i "${sed_args[@]}" "$out_dir/$vm.xml"
+done
 
 echo "done."
