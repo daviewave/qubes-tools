@@ -1,13 +1,13 @@
-#!/bin/bash
+# shellcheck shell=bash
 
 detect_os() {
-  local id id_like
-  id=$(. /etc/os-release && echo "${ID:-}")
-  id_like=$(. /etc/os-release && echo "${ID_LIKE:-}")
-  case " $id $id_like " in
+  local ids
+  # shellcheck source=/dev/null
+  ids=$(. /etc/os-release && echo "${ID:-} ${ID_LIKE:-}")
+  case " $ids " in
     *" fedora "*|*" rhel "*) echo fedora ;;
     *" debian "*|*" ubuntu "*) echo debian ;;
-    *) echo "unsupported os: $id" >&2; return 1 ;;
+    *) echo "unsupported os: $ids" >&2; return 1 ;;
   esac
 }
 
