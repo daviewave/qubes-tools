@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # 1, remove remote access authselect profiles
 sudo rm -rf /usr/share/authselect/default/nis
@@ -14,8 +15,10 @@ done
 sudo authselect apply-changes
 
 # 3, clean up /etc/pam.d/ to prevent unwanted logins
-for i in $(ls /etc/pam.d/ | grep -Ev "(fingerprint-auth|password-auth|postlogin|smartcard-auth|su|system-auth)");
+keep=" fingerprint-auth password-auth postlogin smartcard-auth su su-l sudo sudo-i system-auth other login passwd runuser runuser-l systemd-user qrexec "
+sudo tar -czf "/root/pam.d-$(date +%F-%H%M%S).tar.gz" -C /etc pam.d
+for f in /etc/pam.d/*;
 do
-  sudo rm $i
+  [[ "$keep" == *" ${f##*/} "* ]] || sudo rm -f -- "$f"
 done
 

@@ -3,15 +3,15 @@
 user=$1
 admin=$2
 
-useradd $user
-passwd $user
+id "$user" &>/dev/null || useradd "$user"
+passwd "$user"
 
 
 
 if [[ -n "$admin" ]]; then
-  useradd $admin
-  passwd $admin
-  usermod -aG wheel $admin
+  id "$admin" &>/dev/null || useradd "$admin"
+  passwd "$admin"
+  usermod -aG wheel "$admin"
 fi
 
 echo "done."

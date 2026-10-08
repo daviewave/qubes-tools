@@ -1,12 +1,12 @@
 #!/bin/bash
 
-chmod 700 /usr/sbin/useradd
-chmod 700 /usr/share/bash-completion/completions/useradd
-chmod 700 /etc/default/useradd
-chmod 700 /usr/bin/useradd
-chmod 700 /usr/bin/adduser
+for f in /usr/sbin/useradd /usr/share/bash-completion/completions/useradd /etc/default/useradd /usr/bin/useradd /usr/bin/adduser;
+do
+  [ -e "$f" ] && chmod 700 "$f"
+done
 
-chmod 750 /usr/bin/su*
+chgrp wheel /usr/bin/su
+chmod 4750 /usr/bin/su
 
 setsebool -P unconfined_login off
 passwd -l root
