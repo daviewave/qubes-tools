@@ -1,18 +1,27 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-fix=$1
+refresh_package_lists() {
+  sudo apt update -y
+}
 
-# === start 1
-# a) refresh_package_lists
-echo "updating & upgrading..."
-# b) upgrade_fixing_broken_if_asked
+fix_requested() {
+  [ "$1" = "fix" ]
+}
 
-sudo apt update -y
-if [[ "$fix" == "fix" ]]; then
-  sudo apt --fix-broken upgrade -y
-else
-# === end 1
-  sudo apt upgrade -y
-fi
+upgrade_fixing_broken_if_asked() {
+  if fix_requested "$1"; then
+    sudo apt --fix-broken upgrade -y
+  else
+    sudo apt upgrade -y
+  fi
+}
 
-echo "done."
+main() {
+  echo "updating & upgrading..."
+  refresh_package_lists
+  upgrade_fixing_broken_if_asked "${1:-}"
+  echo "done."
+}
+
+main "$@"

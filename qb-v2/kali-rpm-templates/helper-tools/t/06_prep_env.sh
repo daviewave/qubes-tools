@@ -1,26 +1,43 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=envs.sh
-. "$(dirname "${BASH_SOURCE[0]}")/envs.sh"
+. "$SCRIPT_DIR/envs.sh"
 
-echo "(6/6) installing dependencies & git submodules..."
+is_qubes_vm() {
+  [ -f /usr/share/qubes/marker-vm ]
+}
 
-# === start 1
-# a) install_builder_dependencies
-cd "$qbp" || exit 1
-sudo apt upgrade gnupg
-sudo apt --fix-broken install lintian
-xargs -a dependencies-debian.txt sudo apt install -y
-test -f /usr/share/qubes/marker-vm && sudo apt install qubes-gpg-split
-# b) init_builder_submodules
-git submodule update --init
+install_builder_dependencies() {
+  sudo apt upgrade gnupg
+  sudo apt --fix-broken install lintian
+  xargs -a "$qbp/dependencies-debian.txt" sudo apt install -y
+  if is_qubes_vm; then
+    sudo apt install qubes-gpg-split
+  fi
+}
 
-# c) generate_user_gpg_key
-gpg --full-generate-key
+init_builder_submodules() {
+  git -C "$qbp" submodule update --init
+}
 
-# d) update_and_restart_services
-"${stht}/update.sh" fix
-"${stht}/restart_services.sh"
-# === end 1
+generate_user_gpg_key() {
+  gpg --full-generate-key
+}
 
-echo "(6/6) done."
+update_and_restart_services() {
+  "$stht/update.sh" fix
+  "$stht/restart_services.sh"
+}
+
+main() {
+  echo "(6/6) installing dependencies & git submodules..."
+  install_builder_dependencies
+  init_builder_submodules
+  generate_user_gpg_key
+  update_and_restart_services
+  echo "(6/6) done."
+}
+
+main "$@"

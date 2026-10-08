@@ -1,14 +1,17 @@
-#!/bin/bash
-set -e
-cd "$(dirname "$0")"
+#!/usr/bin/env bash
+set -euo pipefail
 
-echo "Preparing debian-12 based TemplateVM to build kali linux based rpm TemplateVM's..."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-./01_clone_builder_repo.sh
-./02_add_custom_tools.sh
-./03_import_gpg_keys.sh
-./04_add_kali_list.sh
-./05_big_update.sh
-./06_prep_env.sh
+main() {
+  echo "Preparing debian-12 based TemplateVM to build kali linux based rpm TemplateVM's..."
+  "$SCRIPT_DIR/01_clone_builder_repo.sh"
+  "$SCRIPT_DIR/02_add_custom_tools.sh"
+  "$SCRIPT_DIR/03_import_gpg_keys.sh"
+  "$SCRIPT_DIR/04_add_kali_list.sh"
+  "$SCRIPT_DIR/05_big_update.sh"
+  "$SCRIPT_DIR/06_prep_env.sh"
+  echo "DONE. build with: $SCRIPT_DIR/build_template.sh"
+}
 
-echo "DONE."
+main "$@"

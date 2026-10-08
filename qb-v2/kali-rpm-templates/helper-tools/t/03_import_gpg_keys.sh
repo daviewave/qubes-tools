@@ -1,40 +1,49 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=envs.sh
-. "$(dirname "${BASH_SOURCE[0]}")/envs.sh"
+. "$SCRIPT_DIR/envs.sh"
 
-# === start 1
-# a) proxy_gpg_key_fetch
-function proxy_gpg_key_fetch(){
-  key_id="$1"
-  key_file="${key_id}.asc"
-  search_url="https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x${key_id}"
-  wget $search_url -e use_proxy=on -e https_proxy=$https_proxy -O ./$key_file
-  gpg --import ./$key_file
-  gpg --edit-key $key_id
+KEYSERVER_LOOKUP="https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x"
+QUBES_KEYRING="qubes-archive-keyring.gpg"
+
+proxy_gpg_key_fetch() {
+  local key_id=$1
+  local key_file="$1.asc"
+  wget "$KEYSERVER_LOOKUP$key_id" -e use_proxy=on -e "https_proxy=$https_proxy" -O "./$key_file"
+  gpg --import "./$key_file"
+  gpg --edit-key "$key_id"
   sudo mv "$key_file" "$trusted_gpgs/"
 }
-# === end 1
 
-echo "(3/6) adding qubes master key, release signing key (4.3), & debian pkgs signing key..."
-# === start 2
+trust_qubes_master_key() {
+  gpg --import "$qmsk_fp"
+  gpg --edit-key "$qmsk_id"
+}
 
-# a) trust_qubes_master_key
-gpg --import "${qmsk_fp}"
-gpg --edit-key "${qmsk_id}" #(trust 5)
+install_qubes_release_key_as_apt_keyring() {
+  proxy_gpg_key_fetch "$qrsk"
+  sudo sed -i "s|qubes-archive-keyring-4.3.gpg|$QUBES_KEYRING|g" "$srcs_lists/qubes-r4.list"
+  sudo rm -f "$archive_keyring/$QUBES_KEYRING"
+  gpg --export "$qrsk" | sudo tee "$archive_keyring/$QUBES_KEYRING" > /dev/null
+}
 
-# b) install_qubes_release_key_as_apt_keyring
-sudo rm "${archive_keyring}/qubes-archive-keyring.gpg" || true
-proxy_gpg_key_fetch $qrsk
-sudo sed -i 's|qubes-archive-keyring-4.3.gpg|qubes-archive-keyring.gpg|g' "${srcs_lists}/qubes-r4.list"
-sudo rm "${archive_keyring}/qubes-archive-keyring.gpg" || true
-gpg --export $qrsk | sudo tee "${archive_keyring}/qubes-archive-keyring.gpg" > /dev/null
+import_qubes_debian_key() {
+  proxy_gpg_key_fetch "$qdsk"
+}
 
-# c) import_qubes_debian_key
-proxy_gpg_key_fetch $qdsk
+update_fixing_broken() {
+  "$stht/update.sh" fix
+}
 
-# d) update_fixing_broken
-sudo bash "${qbpht}/update.sh" fix
-# === end 2
+main() {
+  echo "(3/6) adding qubes master key, release signing key (4.3), & debian pkgs signing key..."
+  trust_qubes_master_key
+  install_qubes_release_key_as_apt_keyring
+  import_qubes_debian_key
+  update_fixing_broken
+  echo "(3/6) done."
+}
 
-echo "(3/6) done."
+main "$@"

@@ -1,14 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# === start 1
-# a) require_envs_sourced
-if [[ ! -n "$qbp" || ! -n "$st" ]]; then
+envs_are_sourced() {
+  [ -n "${qbp:-}" ] && [ -n "${st:-}" ]
+}
+
+require_envs_sourced() {
+  envs_are_sourced && return 0
   echo "ERROR: pls source envs.sh file before running script, use cmd:"
   echo ". ./envs.sh || source ./envs.sh"
   exit 1
-fi
-# === end 1
+}
 
-exit 0
+main() {
+  require_envs_sourced
+}
 
-
+main "$@"

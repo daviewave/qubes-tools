@@ -1,21 +1,34 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=envs.sh
-. "$(dirname "${BASH_SOURCE[0]}")/envs.sh"
+. "$SCRIPT_DIR/envs.sh"
 
-echo "(4/6) adding kali gpg key and repo source...."
+KALI_KEYRING_URL="https://archive.kali.org/archive-keyring.gpg"
+KALI_KEYRING="kali-archive-keyring.gpg"
+KALI_SUITES="https://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware"
 
-# === start 1
-# a) install_proxychains_config
-sudo rm -rf /etc/proxychains4.conf
-sudo cp "${st}/config/proxychains.conf" /etc
+install_proxychains_config() {
+  sudo rm -rf /etc/proxychains4.conf
+  sudo cp "$st/config/proxychains.conf" /etc
+}
 
-# b) fetch_kali_archive_keyring
-sudo proxychains4 wget https://archive.kali.org/archive-keyring.gpg -O "${archive_keyring}/kali-archive-keyring.gpg"
+fetch_kali_archive_keyring() {
+  sudo proxychains4 wget "$KALI_KEYRING_URL" -O "$archive_keyring/$KALI_KEYRING"
+}
 
-# c) add_kali_source_list
-echo "deb [signed-by=${archive_keyring}/kali-archive-keyring.gpg] https://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware" \
-  | sudo tee "${srcs_lists}/kali.list" > /dev/null
-# === end 1
+add_kali_source_list() {
+  echo "deb [signed-by=$archive_keyring/$KALI_KEYRING] $KALI_SUITES" \
+    | sudo tee "$srcs_lists/kali.list" > /dev/null
+}
 
-echo -e '\n(4/6) done. \n'
+main() {
+  echo "(4/6) adding kali gpg key and repo source...."
+  install_proxychains_config
+  fetch_kali_archive_keyring
+  add_kali_source_list
+  echo "(4/6) done."
+}
+
+main "$@"

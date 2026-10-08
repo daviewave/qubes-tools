@@ -1,18 +1,30 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=envs.sh
-. "$(dirname "${BASH_SOURCE[0]}")/envs.sh"
+. "$SCRIPT_DIR/envs.sh"
 
-echo "(1/6) cloning builderv2 git repo..."
+BUILDER_REPO_URL="https://github.com/QubesOS/qubes-builderv2.git"
+CLONE_STAGING="/home/user/qubes-builderv2"
 
-# === start 1
-# a) clone_builder_repo_unless_present
-if [ -d "${qbp}/.git" ]; then
-  echo "${qbp} already cloned, skipping"
-else
-  git clone https://github.com/QubesOS/qubes-builderv2.git /home/user/qubes-builderv2
-  sudo mv /home/user/qubes-builderv2 "${qbp}"
-fi
-# === end 1
+builder_repo_present() {
+  [ -d "$qbp/.git" ]
+}
 
-echo "(1/6) done."
+clone_builder_repo_unless_present() {
+  if builder_repo_present; then
+    echo "$qbp already cloned, skipping"
+    return
+  fi
+  git clone "$BUILDER_REPO_URL" "$CLONE_STAGING"
+  sudo mv "$CLONE_STAGING" "$qbp"
+}
+
+main() {
+  echo "(1/6) cloning builderv2 git repo..."
+  clone_builder_repo_unless_present
+  echo "(1/6) done."
+}
+
+main "$@"

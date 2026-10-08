@@ -1,24 +1,37 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# === start 1
-# a) clean_one_artifact_dir_or_all
-only_one="$1"
-if [ -n "$only_one" ]; then
-  echo "removing contents from 'artifacts/$only_one/*'"
-  rm -rf "${PWD:?}/artifacts/${only_one:?}"/*
-else
-  dirs=("components" "distfiles" "logs" "repository" "sources" "templates" "tmp")
+ARTIFACT_DIRS="components distfiles logs repository sources templates tmp"
+
+clean_one_artifact_dir() {
+  echo "removing contents from 'artifacts/$1/*'"
+  rm -rf "${PWD:?}/artifacts/${1:?}"/*
+}
+
+clean_all_artifact_dirs() {
   echo -e "removing contents from $PWD/artifacts/ -> \n$(ls artifacts/)"
-  for dir in "${dirs[@]}"
-  do
-    p="$PWD/artifacts/$dir"
-    rm -rf "${p:?}"/*
+  local dir
+  for dir in $ARTIFACT_DIRS; do
+    rm -rf "${PWD:?}/artifacts/$dir"/*
   done
-fi
+}
 
-# b) prune_docker
-docker container prune
-docker volume prune
-# === end 1
+clean_one_artifact_dir_or_all() {
+  if [ -n "$1" ]; then
+    clean_one_artifact_dir "$1"
+  else
+    clean_all_artifact_dirs
+  fi
+}
 
+prune_docker() {
+  docker container prune
+  docker volume prune
+}
 
+main() {
+  clean_one_artifact_dir_or_all "${1:-}"
+  prune_docker
+}
+
+main "$@"
