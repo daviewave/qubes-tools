@@ -14,8 +14,13 @@
 #  ln -s /rw/config/cups /etc/cups
 #  systemctl --no-block restart cups
 
+remove_installed_pkgs() {
+  installed=$(rpm -q --qf '%{NAME}\n' "$@" | grep -v ' is not installed$')
+  [ -z "$installed" ] || dnf remove -y --noautoremove $installed
+}
+
 #1, uninstall and disable cups
-sudo dnf remove -y --noautoremove python3-cups tinyproxy openssh speech-dispatcher \
+remove_installed_pkgs python3-cups tinyproxy openssh speech-dispatcher \
   vpnc xl2tpd tpm2-tools libvpl tslib wireplumber vim-common vim-enhanced vulkan-loader libvdpau \
   usb_modeswitch
 

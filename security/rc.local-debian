@@ -5,8 +5,13 @@ export https_proxy=http://127.0.0.1:8082
 
 sudo apt update -y
 
+remove_installed_pkgs() {
+  mapfile -t installed < <(dpkg-query -W -f='${db:Status-Abbrev} ${Package}\n' "$@" 2>/dev/null | awk '$1 == "ii" {print $2}')
+  ((${#installed[@]} == 0)) || sudo apt remove -y "${installed[@]}"
+}
+
 #=== 1. apt pkgs ===# (-> ghostscript is first added)
-sudo apt remove -y avahi-daemon libavahi-core7 libavahi-glib1 python3-cups cups \
+remove_installed_pkgs avahi-daemon libavahi-core7 libavahi-glib1 python3-cups cups \
 	cups-common cups-server-common cups-daemon openssh-client speech-dispatcher \
 	openssh-client vim-tiny vim-common vim-common vim-nox libssh-4 exfat-fuse \
 	libssh-gcrypt-4 vim-runtime mesa-vulkan-drivers speech-dispatcher pkexec \

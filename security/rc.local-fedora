@@ -20,8 +20,13 @@
 
 #maybe samba-common-libs
 
+remove_installed_pkgs() {
+  installed=$(rpm -q --qf '%{NAME}\n' "$@" | grep -v ' is not installed$')
+  [ -z "$installed" ] || dnf remove -y --noautoremove $installed
+}
+
 #1, uninstall bloat
-sudo dnf remove -y --noautoremove python3-cups tinyproxy openssh speech-dispatcher vim-common vim-enhanced \
+remove_installed_pkgs python3-cups tinyproxy openssh speech-dispatcher vim-common vim-enhanced \
   vim-data mesa-vulkan-drivers sshpass libssh2 openssh-askpass openfortivpn rsync system-config-printer-libs openvpn vpnc vpnc-script libsmi libsmbclient \
   samba-common-libs samba-client-libs openal-soft dsniff strongswan polkit-pkla-compat kismet kdump-utils infiniband-diags atril libglvnd-gles geoclue2 \
   blueman NetworkManager-bluetooth fuse3 fuse3-common nikto gdb-headless
