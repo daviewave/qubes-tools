@@ -35,7 +35,7 @@ check_rc_local_is_deployable() {
 
 back_up_existing_rc_local() {
   qvm-run -q -p -u root "$1" \
-    "[ ! -f $VM_RC_LOCAL ] || cp -a $VM_RC_LOCAL $VM_RC_LOCAL.bak-\$(date +%F-%H%M%S)"
+    "[ ! -f $VM_RC_LOCAL ] || cp -a $VM_RC_LOCAL $VM_RC_LOCAL.bak-\$(date +%F-%H%M%S)" < /dev/null
 }
 
 push_rc_local() {
@@ -49,7 +49,7 @@ report_deployed() {
 run_now_if_asked() {
   [ "${3:-}" = "--run" ] || return 0
   echo "running $VM_RC_LOCAL in $1..."
-  qvm-run -p -u root "$1" "$VM_RC_LOCAL"
+  qvm-run -p -u root "$1" "$VM_RC_LOCAL" < /dev/null
 }
 
 main() {
