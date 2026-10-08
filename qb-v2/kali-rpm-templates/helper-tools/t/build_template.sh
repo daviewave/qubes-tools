@@ -2,6 +2,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=envs.sh
+. "$SCRIPT_DIR/envs.sh"
 
 DEFAULT_TEMPLATE="kali-core"
 CONTAINER_IMAGE="qubes-builder-debian:latest"
@@ -22,10 +24,6 @@ check_args() {
   for arg in "$@"; do
     [ "${arg:0:2}" != "--" ] || [ "$arg" = "--sign" ] || usage
   done
-}
-
-check_env() {
-  "$SCRIPT_DIR/check_env.sh"
 }
 
 template_from_args() {
@@ -71,7 +69,6 @@ report_artifacts() {
 
 main() {
   check_args "$@"
-  check_env
   build_container_image_if_missing
   build_template "$(template_from_args "$@")"
   sign_template_if_asked "$(template_from_args "$@")" "$@"

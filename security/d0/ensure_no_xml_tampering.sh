@@ -41,6 +41,7 @@ done
 
 mkdir -p "$out_dir"
 for vm in "${vms[@]}"; do
+  # shellcheck disable=SC2024 # the dump is meant to be owned by the caller
   sudo virsh -c xen:/// dumpxml "$vm" > "$out_dir/$vm.xml"
   sed -i "${sed_args[@]}" "$out_dir/$vm.xml"
 done

@@ -1,9 +1,7 @@
 #!/bin/bash
 
-./check_env.sh
-if [ $? -eq 1 ]; then
-  exit 1
-fi
+# shellcheck source=envs.sh
+. "$(dirname "${BASH_SOURCE[0]}")/envs.sh"
 
 function proxy_gpg_key_fetch(){
   key_id="$1"
