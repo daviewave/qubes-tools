@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# 1, remove extra '/' in /builder/mnt//tmp
+# === start 1
+# a) remove_double_slash_before_tmpdir (/builder/mnt//tmp)
 echo "1/2"
 mapfile -t matches < <(grep -Rl "\${INSTALL_DIR}/\${TMPDIR}" ./)
 for match in "${matches[@]}"
@@ -9,7 +10,7 @@ do
   sed -i 's|\${INSTALL_DIR}/\${TMPDIR}|\${INSTALL_DIR}\${TMPDIR}|g' "$match"
 done
 
-#2, add the loop for mount safety
+# b) add_mount_safety_loop
 for os in debian ubuntu;
 do
   fp="artifacts/sources/builder-debian/template_$os/distribution.sh"
@@ -29,6 +30,7 @@ do
       done\
   ' ./$fp
 done
+# === end 1
 
 
 echo "done."

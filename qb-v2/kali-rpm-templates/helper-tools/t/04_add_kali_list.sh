@@ -5,15 +5,17 @@
 
 echo "(4/6) adding kali gpg key and repo source...."
 
-#1,
+# === start 1
+# a) install_proxychains_config
 sudo rm -rf /etc/proxychains4.conf
 sudo cp "${st}/config/proxychains.conf" /etc
 
-#2,
+# b) fetch_kali_archive_keyring
 sudo proxychains4 wget https://archive.kali.org/archive-keyring.gpg -O "${archive_keyring}/kali-archive-keyring.gpg"
 
-#3,
+# c) add_kali_source_list
 echo "deb [signed-by=${archive_keyring}/kali-archive-keyring.gpg] https://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware" \
   | sudo tee "${srcs_lists}/kali.list" > /dev/null
+# === end 1
 
 echo -e '\n(4/6) done. \n'
