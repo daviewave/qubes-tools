@@ -1,6 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
-. "$(dirname "$0")/lib/common.sh"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/common.sh
+. "$SCRIPT_DIR/lib/common.sh"
 
 install_on_fedora(){
   if dnf --version 2>/dev/null | grep -q '^dnf5'; then
@@ -18,6 +21,19 @@ install_on_debian(){
   sudo apt install -y mullvad-browser
 }
 
-os=$(resolve_os "${1:-}")
-use_updates_proxy_if_template
-"install_on_$os"
+check_args() {
+  [ "$#" -le 1 ] || os_usage
+  resolve_os "${1:-}" > /dev/null
+}
+
+install_for() {
+  "install_on_$1"
+}
+
+main() {
+  check_args "$@"
+  use_updates_proxy_if_template
+  install_for "$(resolve_os "${1:-}")"
+}
+
+main "$@"

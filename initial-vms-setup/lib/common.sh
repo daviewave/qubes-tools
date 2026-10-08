@@ -11,11 +11,16 @@ detect_os() {
   esac
 }
 
+os_usage() {
+  echo "usage: $(basename "$0") [fedora|debian]" >&2
+  return 1
+}
+
 resolve_os() {
   case "${1:-}" in
     "") detect_os ;;
     fedora|debian) echo "$1" ;;
-    *) echo "usage: $(basename "$0") [fedora|debian]" >&2; return 1 ;;
+    *) os_usage ;;
   esac
 }
 

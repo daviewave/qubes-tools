@@ -1,15 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
-out_dir="${XML_DIR:-./vm-xmls}"
+OUT_DIR="${XML_DIR:-./vm-xmls}"
+LIBVIRT_URI="xen:///"
 
-if [ $# -gt 0 ]; then
-  vms=("$@")
-else
-  mapfile -t vms < <(sudo virsh -c xen:/// list --all --name | grep -v '^$')
-fi
-
-edits=(
+XML_EDITS=(
   "s|console=hvc0| |g"
   "s|rd_NO_PLYMOUTH| |g"
   "s|rd.plymouth.enable=0| |g"
@@ -34,16 +29,40 @@ edits=(
   "s|<memballoon model='xen'/>||g"
 )
 
-sed_args=()
-for e in "${edits[@]}"; do
-  sed_args+=(-e "$e")
-done
+domains() {
+  if [ "$#" -gt 0 ]; then
+    printf '%s\n' "$@"
+  else
+    sudo virsh -c "$LIBVIRT_URI" list --all --name | grep -v '^$'
+  fi
+}
 
-mkdir -p "$out_dir"
-for vm in "${vms[@]}"; do
+sed_args() {
+  local e
+  for e in "${XML_EDITS[@]}"; do
+    printf '%s\0' -e "$e"
+  done
+}
+
+dump_and_edit() {
+  local args
+  mapfile -d '' -t args < <(sed_args)
   # shellcheck disable=SC2024 # the dump is meant to be owned by the caller
-  sudo virsh -c xen:/// dumpxml "$vm" > "$out_dir/$vm.xml"
-  sed -i "${sed_args[@]}" "$out_dir/$vm.xml"
-done
+  sudo virsh -c "$LIBVIRT_URI" dumpxml "$1" < /dev/null > "$OUT_DIR/$1.xml"
+  sed -i "${args[@]}" "$OUT_DIR/$1.xml"
+}
 
-echo "done."
+dump_every_domain() {
+  mkdir -p "$OUT_DIR"
+  local vm
+  while read -r vm; do
+    dump_and_edit "$vm"
+  done < <(domains "$@")
+}
+
+main() {
+  dump_every_domain "$@"
+  echo "done."
+}
+
+main "$@"

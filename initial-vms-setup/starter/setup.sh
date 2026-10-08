@@ -1,10 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
-cd "$(dirname "$0")"
 
-./scripts/1_harden_kernel.sh
-./scripts/2_blacklist_mods.sh
-./scripts/3_update_etc_security.sh
-./scripts/4_reduce_sebool_bloat.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "done."
+main() {
+  "$SCRIPT_DIR/scripts/1_harden_kernel.sh"
+  "$SCRIPT_DIR/scripts/2_blacklist_mods.sh"
+  "$SCRIPT_DIR/scripts/3_update_etc_security.sh"
+  "$SCRIPT_DIR/scripts/4_reduce_sebool_bloat.sh"
+  echo "done. check the result with: $SCRIPT_DIR/verify.sh"
+}
+
+main "$@"
