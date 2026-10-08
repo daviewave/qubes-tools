@@ -21,130 +21,76 @@
 
 from __future__ import annotations
 
-import subprocess
-import sys
-
-import dbus
-import qubesdb
-from ipaddress import IPv4Address
 import os
+import sys
+from ipaddress import IPv4Address
+
+FALLBACK_INTERNAL_DNS = ['10.139.1.1', '10.139.1.2']
+FALLBACK_EXTERNAL_DNS = ['192.168.20.1']
+QUBESDB_DNS_KEYS = ('/qubes-netvm-primary-dns', '/qubes-netvm-secondary-dns')
+
+
+def parse_ipv4(value):
+    try:
+        return str(IPv4Address(value))
+    except ValueError:
+        return None
 
 
 def get_internal_dns():
-		#should really be done with qubesdb -- not sure why its not availabe when i try with qdb.read('/qubes-dns')
-		return ['10.139.1.1', '10.139.1.2']
+    try:
+        import qubesdb
+        qdb = qubesdb.QubesDB()
+        found = [qdb.read(key) for key in QUBESDB_DNS_KEYS]
+    except Exception as e:
+        print(f'qubesdb unavailable, using fallback internal dns: {e}', file=sys.stderr)
+        return FALLBACK_INTERNAL_DNS
+
+    internal_dns = [ip for ip in (parse_ipv4(v.decode('ascii', 'ignore')) for v in found if v) if ip]
+    return internal_dns or FALLBACK_INTERNAL_DNS
 
 
-def get_external_dns():
-		external_dns = []
-		try:
-				with open('/etc/resolv.conf', 'r') as f:
-						lines = f.readlines()
-						external_dns = [line.replace('\n', '').split(" ")[1]  for line in lines if line.startswith('nameserver')]
-		except Exception as e:
-				print(e)
-				external_dns = ['192.168.20.1']
+def get_external_dns(resolv_conf='/etc/resolv.conf'):
+    external_dns = []
+    try:
+        with open(resolv_conf) as f:
+            for line in f:
+                fields = line.split()
+                if len(fields) >= 2 and fields[0] == 'nameserver':
+                    ip = parse_ipv4(fields[1])
+                    if ip and not IPv4Address(ip).is_loopback:
+                        external_dns.append(ip)
+    except OSError as e:
+        print(e, file=sys.stderr)
 
-		return external_dns
+    return external_dns or FALLBACK_EXTERNAL_DNS
 
 
 def generate_rules_list(internal_dns, external_dns):
-		rules = [
+    rules = [
         'table ip qubes {',
         'chain dnat-dns {',
         'type nat hook prerouting priority -150; policy accept;',
-		]
+    ]
 
-		for ns in internal_dns:
-			rules.append(f"ip daddr {ns} udp dport 53 dnat to {external_dns}")
-			rules.append(f"ip daddr {ns} tcp dport 53 dnat to {external_dns}")
+    for i, ns in enumerate(internal_dns):
+        upstream = external_dns[i % len(external_dns)]
+        rules.append(f'ip daddr {ns} udp dport 53 dnat to {upstream}')
+        rules.append(f'ip daddr {ns} tcp dport 53 dnat to {upstream}')
 
-		rules.append('}')
-		rules.append('}')
-		return rules
+    rules.append('}')
+    rules.append('}')
+    return rules
+
 
 def apply_dnat_rules(rules):
-		preamble = ['add table ip qubes', 'add chain ip qubes dnat-dns', 'delete chain ip qubes dnat-dns',]
-		cmd = ['nft', '--', '\n'.join(preamble + rules)]
-		os.execvp('nft', cmd)
+    preamble = ['add table ip qubes', 'add chain ip qubes dnat-dns', 'delete chain ip qubes dnat-dns']
+    os.execvp('nft', ['nft', '--', '\n'.join(preamble + rules)])
 
 
 def install_firewall_rules():
-    # 1, create list containing internal dns servers
-		internal_dns = get_internal_dns()
+    apply_dnat_rules(generate_rules_list(get_internal_dns(), get_external_dns()))
 
-		# 2, get nameservers defined in /etc/resolv.conf
-		external_dns = get_external_dns()
-
-		# 3, prep nft rules into a list
-		rules = generate_rules_list(internal_dns, external_dns[0])
-
-		# 4, apply rules
-		apply_dnat_rules(rules)
-
-
-
-#		qdb = qubesdb.QubesDB()
-#    qubesdb_dns = []
-#    for i in ('/qubes-netvm-primary-dns', '/qubes-netvm-secondary-dns'):
-#        ns_maybe = qdb.read(i)
-#        if ns_maybe is None:
-#            continue
-#        try:
-#            qubesdb_dns.append(IPv4Address(ns_maybe.decode("ascii", "strict")))
-#        except (UnicodeDecodeError, ValueError):
-#            pass
-#    preamble = [
-#        'add table ip qubes',
-        # Add the chain so that the subsequent delete will work. If the chain already
-        # exists this is a harmless no-op.
-#        'add chain ip qubes dnat-dns',
-        # Delete the chain so that if the chain already exists, it will be removed.
-        # The removal of the old chain and addition of the new one happen as a single
-        # atomic operation, so there is no period where neither chain is present or
-        # where both are present.
-#        'delete chain ip qubes dnat-dns',
-#    ]
-#    rules = [
-#        'table ip qubes {',
-#        'chain dnat-dns {',
-#        'type nat hook prerouting priority dstnat; policy accept;',
-#    ]
-#    dns_resolved = get_dns_resolved()
-#    if not dns_resolved:
-        # User has no IPv4 DNS set in sys-net. Maybe IPv6 only environment.
-        # Or maybe user wants to enforce DNS-Over-HTTPS.
-        # Drop IPv4 DNS requests to qubesdb_dns addresses.
-#        for vm_nameserver in qubesdb_dns:
-#            rules += [
-#                f"ip daddr {vm_nameserver} udp dport 53 drop",
-#                f"ip daddr {vm_nameserver} tcp dport 53 drop",
-#            ]
-#    else:
-#        while len(qubesdb_dns) > len(dns_resolved):
-            # Ensure that upstream DNS pool is larger than qubesdb_dns pool
-#            dns_resolved = dns_resolved + dns_resolved
-#        for vm_nameserver, dest in zip(qubesdb_dns, dns_resolved):
-#            dns_ = str(dest)
-#            rules += [
-#                f"ip daddr {vm_nameserver} udp dport 53 dnat to {dns_}",
-#                f"ip daddr {vm_nameserver} tcp dport 53 dnat to {dns_}",
-#            ]
-#    rules += ["}", "}"]
-
-    # check if new rules are the same as the old ones - if so, don't reload
-    # and return that info via exit code
-#    try:
-#        old_rules = subprocess.check_output(
-#            ["nft", "list", "chain", "ip", "qubes", "dnat-dns"]).decode().splitlines()
-#    except subprocess.CalledProcessError:
-#        old_rules = []
-#    old_rules = [line.strip() for line in old_rules]
-
-#    if old_rules == rules:
-#        sys.exit(100)
-
-#    os.execvp("nft", ("nft", "--", "\n".join(preamble + rules)))
 
 if __name__ == '__main__':
     install_firewall_rules()
