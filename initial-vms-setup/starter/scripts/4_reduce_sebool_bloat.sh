@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 bad_bools=(
   "abrt_handle_event"
@@ -45,9 +46,6 @@ bad_bools=(
   "xguest_use_bluetooth"
 )
 
-for b in "${bad_bools[@]}"; do
-  setsebool -P $b off
-done
 
 exec_bools=(
   "auditadm_exec_content"
@@ -59,9 +57,17 @@ exec_bools=(
   "xguest_exec_content"
 )
 
-for b in "${exec_bools[@]}"; do
-  setsebool -P $b off
+mapfile -t known < <(getsebool -a | cut -d' ' -f1)
+settings=()
+for b in "${bad_bools[@]}" "${exec_bools[@]}"; do
+  if printf '%s\n' "${known[@]}" | grep -qx "$b"; then
+    settings+=("$b=off")
+  else
+    echo "skipping unknown boolean: $b"
+  fi
 done
+
+setsebool -P "${settings[@]}"
 
 echo "done."
 
