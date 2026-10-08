@@ -1,14 +1,20 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
-cfg_dir=/etc/security
+CFG_DIR=/etc/security
 
-# === start 1
-# a) deny_all_pam_access
-echo "-:ALL:ALL" > $cfg_dir/access.conf
+deny_all_pam_access() {
+  echo "-:ALL:ALL" > "$CFG_DIR/access.conf"
+}
 
-# b) audit_faillock
-grep -qx "audit" $cfg_dir/faillock.conf || echo "audit" >> $cfg_dir/faillock.conf
-# === end 1
+audit_faillock() {
+  grep -qx "audit" "$CFG_DIR/faillock.conf" || echo "audit" >> "$CFG_DIR/faillock.conf"
+}
 
-echo "done."
+main() {
+  deny_all_pam_access
+  audit_faillock
+  echo "done."
+}
+
+main "$@"

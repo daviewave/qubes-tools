@@ -1,18 +1,27 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
-conf_dir="$(dirname "$0")/../conf"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONF_DIR="$SCRIPT_DIR/../conf"
+SYSCTL_CONF="90-qubes-hardening.conf"
 
-# === start 1
-# a) install_sysctl_hardening
-install -m 644 "$conf_dir/90-qubes-hardening.conf" /etc/sysctl.d/90-qubes-hardening.conf
-# b) apply_sysctl_settings
-sysctl --system > /dev/null
+install_sysctl_hardening() {
+  install -m 644 "$CONF_DIR/$SYSCTL_CONF" "/etc/sysctl.d/$SYSCTL_CONF"
+}
 
-# === end 1
-# === start 2
-# a) lock_module_loading
-echo 1 > /proc/sys/kernel/modules_disabled
-# === end 2
+apply_sysctl_settings() {
+  sysctl --system > /dev/null
+}
 
-echo "done."
+lock_module_loading() {
+  echo 1 > /proc/sys/kernel/modules_disabled
+}
+
+main() {
+  install_sysctl_hardening
+  apply_sysctl_settings
+  lock_module_loading
+  echo "done."
+}
+
+main "$@"

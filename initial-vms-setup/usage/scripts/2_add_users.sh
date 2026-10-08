@@ -1,23 +1,25 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-user=$1
-admin=$2
+user_exists() {
+  id "$1" &> /dev/null
+}
 
-# === start 1
-# a) create_user_with_password
-id "$user" &>/dev/null || useradd "$user"
-passwd "$user"
+create_user_with_password() {
+  user_exists "$1" || useradd "$1"
+  passwd "$1"
+}
 
+create_admin_in_wheel() {
+  [ -n "$1" ] || return 0
+  create_user_with_password "$1"
+  usermod -aG wheel "$1"
+}
 
+main() {
+  create_user_with_password "$1"
+  create_admin_in_wheel "${2:-}"
+  echo "done."
+}
 
-# b) create_admin_in_wheel
-if [[ -n "$admin" ]]; then
-  id "$admin" &>/dev/null || useradd "$admin"
-  passwd "$admin"
-  usermod -aG wheel "$admin"
-fi
-# === end 1
-
-echo "done."
-
-
+main "$@"

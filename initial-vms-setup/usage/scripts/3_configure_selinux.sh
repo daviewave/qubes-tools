@@ -1,27 +1,36 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-user=$1
-admin=$2
+SEPERMIT_CONF=/etc/security/sepermit.conf
 
-# === start 1
-# a) confine_root_home
-semanage login -m -s root root
-semanage fcontext -a -t admin_home_t "/root(/.*)?"
-restorecon -R /root
+confine_root_home() {
+  semanage login -m -s root root
+  semanage fcontext -a -t admin_home_t "/root(/.*)?"
+  restorecon -R /root
+}
 
-# b) map_admin_to_sysadm_u
-if [ -n "$admin" ]; then
-  semanage login -a -s sysadm_u "$admin"
-  semanage fcontext -a -t sysadm_home_t "/home/$admin(/.*)?"
-  restorecon -R "/home/$admin"
-  grep -qx "$admin:exclusive" /etc/security/sepermit.conf || echo "$admin:exclusive" >> /etc/security/sepermit.conf
-fi
+map_login_to_selinux_user() {
+  local login=$1 se_user=$2 home_type=$3
+  semanage login -a -s "$se_user" "$login"
+  semanage fcontext -a -t "$home_type" "/home/$login(/.*)?"
+  restorecon -R "/home/$login"
+}
 
-# c) map_user_to_user_u
-semanage login -a -s user_u "$user"
-semanage fcontext -a -t user_home_t "/home/$user(/.*)?"
-restorecon -R "/home/$user"
-# === end 1
+map_admin_to_sysadm_u() {
+  [ -n "$1" ] || return 0
+  map_login_to_selinux_user "$1" sysadm_u sysadm_home_t
+  grep -qx "$1:exclusive" "$SEPERMIT_CONF" || echo "$1:exclusive" >> "$SEPERMIT_CONF"
+}
 
-echo "done."
+map_user_to_user_u() {
+  map_login_to_selinux_user "$1" user_u user_home_t
+}
 
+main() {
+  confine_root_home
+  map_admin_to_sysadm_u "${2:-}"
+  map_user_to_user_u "$1"
+  echo "done."
+}
+
+main "$@"

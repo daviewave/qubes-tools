@@ -1,8 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# === start 1
-# a) chroot_user_to_home
-entry=$(printf "%s\t\t\t/home/%s" "$1" "$1")
-grep -qxF "$entry" /etc/security/chroot.conf || echo "$entry" >> /etc/security/chroot.conf
-# === end 1
-#echo -e "$2\t\t\t/home/$2"
+CHROOT_CONF=/etc/security/chroot.conf
+
+chroot_user_to_home() {
+  local entry
+  entry="$(printf "%s\t\t\t/home/%s" "$1" "$1")"
+  grep -qxF "$entry" "$CHROOT_CONF" || echo "$entry" >> "$CHROOT_CONF"
+}
+
+main() {
+  chroot_user_to_home "$1"
+}
+
+main "$@"

@@ -1,34 +1,38 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-user=$1
-admin=$2
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# === start 1
-# a) ask_for_user_if_missing
-if [ -z "$user" ]; then
-  read -p "enter the main user's username: " user
-fi
+user_or_prompt() {
+  local user=${1:-}
+  [ -n "$user" ] || read -rp "enter the main user's username: " user
+  echo "$user"
+}
 
-# b) ask_for_admin_if_missing
-if [ -z "$admin" ]; then
-  read -p "add admin? " add_admin
-
-  if [[ "$add_admin" == "y" || "$add_admin" == "Y" ]]; then
-    read -p "enter admin username: " admin
+admin_or_prompt() {
+  local admin=${1:-} add_admin
+  if [ -z "$admin" ]; then
+    read -rp "add admin? " add_admin
+    [[ "$add_admin" != [yY] ]] || read -rp "enter admin username: " admin
   fi
-fi
-# === end 1
+  echo "$admin"
+}
 
+run_usage_steps() {
+  "$SCRIPT_DIR/scripts/1_update_etc_security.sh" "$1" "$2"
+  "$SCRIPT_DIR/scripts/2_add_users.sh" "$1" "$2"
+  "$SCRIPT_DIR/scripts/3_configure_selinux.sh" "$1" "$2"
+  "$SCRIPT_DIR/scripts/4_secure_etc_default.sh"
+}
 
-# === start 2
-# a) run_usage_steps
-cd "$(dirname "$0")" || exit 1
-./scripts/1_update_etc_security.sh "$user" "$admin" || exit 1
-./scripts/2_add_users.sh "$user" "$admin" || exit 1
-./scripts/3_configure_selinux.sh "$user" "$admin" || exit 1
-./scripts/4_secure_etc_default.sh || exit 1
-# === end 2
+point_at_optional_scripts() {
+  echo -e "done.\n"
+  echo "optional scripts available: $SCRIPT_DIR/scripts/restrict_access.sh"
+}
 
-echo -e "done.\n"
-echo "optional scripts available."
+main() {
+  run_usage_steps "$(user_or_prompt "${1:-}")" "$(admin_or_prompt "${2:-}")"
+  point_at_optional_scripts
+}
 
+main "$@"
