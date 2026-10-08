@@ -7,7 +7,11 @@ fi
 
 echo "(1/6) cloning builderv2 git repo..."
 
-git clone https://github.com/QubesOS/qubes-builderv2.git /home/user/qubes-builderv2
-sudo mv /home/user/qubes-builderv2 /opt
+if [ -d "${qbp}/.git" ]; then
+  echo "${qbp} already cloned, skipping"
+else
+  git clone https://github.com/QubesOS/qubes-builderv2.git /home/user/qubes-builderv2
+  sudo mv /home/user/qubes-builderv2 "${qbp}"
+fi
 
 echo "(1/6) done."

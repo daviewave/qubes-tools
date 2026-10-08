@@ -4,7 +4,7 @@ set -ex
 
 # 1, ensure at least 1 argument is passed in
 if [ $# -lt 1 ]; then
-    echo "Usage: $0 CONTAINER_ENGINE <MOCK_CONFIGURATION_FILE>" >&2
+    echo "Usage: $0 CONTAINER_ENGINE [DOCKERFILE_OS] [MOCK_CONFIGURATION_FILE]" >&2
     echo "If MOCK_CONFIGURATION_FILE is provided, it will use Mock chroot as container rootfs." >&2
     exit 1
 fi
@@ -27,7 +27,6 @@ fi
 
 # get dockerfile
 if [ -z "$DOCKERFILE_OS" ]; then
-    echo "HITTTING"
     DOCKERFILE_OS="fedora"
 fi
 DOCKERFILE="${TOOLS_DIR}/../dockerfiles/$DOCKERFILE_OS.Dockerfile"

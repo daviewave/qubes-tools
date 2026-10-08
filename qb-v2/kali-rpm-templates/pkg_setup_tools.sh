@@ -7,29 +7,32 @@ if [[ ! -n $setup_type  ]]; then
   read -p "are you preparing an appvm (a) or templatevm (t) ? (a/t): " setup_type
 fi
 
-wrkdir="./transfer_pkgs/${setup_type}-setup-tools"
-mkdir -p $wrkdir
+cd "$(dirname "$0")" || exit 1
+wrkdir="./transfer-pkgs/${setup_type}-setup-tools"
+rm -rf "${wrkdir:?}"
+mkdir -p "$wrkdir"
 
-dependent_subdirs=("instructions" "help" "config")
+dependent_subdirs=("instructions" "config" "helper-tools")
 for d in "${dependent_subdirs[@]}";
 do
-  wrkdir_path="${wrkdir}/${d}"
-  mkdir -p ./$wrkdir_path
-
   tools_path="${d}/${setup_type}"
-  cp $tools_path/* $wrkdir_path
+  [ -d "$tools_path" ] || continue
+
+  wrkdir_path="${wrkdir}/${d}"
+  mkdir -p "$wrkdir_path"
+  cp -r "$tools_path"/. "$wrkdir_path"
 done
 
-mkdir -p $wrkdir/builders
-cp builders/* $wrkdir/builders/
+mkdir -p "$wrkdir/builders"
+cp builders/* "$wrkdir/builders/"
 
 echo "done."
 echo "setup tools available at: '$PWD/$wrkdir'"
 
 if [[ ! -n $destination_vm ]]; then
-  echo "copy to setup vm with: 'qvm-copy-to-vm <setup vm> $wrkdir"
+  echo "copy to setup vm with: 'qvm-copy-to-vm <setup vm> $wrkdir'"
 else
-  qvm-copy-to-vm $destination_vm $wrkdir
+  qvm-copy-to-vm "$destination_vm" "$wrkdir"
 fi
 
 echo "done."

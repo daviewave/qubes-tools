@@ -7,16 +7,16 @@ fi
 
 echo "(6/6) installing dependencies & git submodules..."
 
-cd $qbp
+cd "$qbp" || exit 1
 sudo apt upgrade gnupg
 sudo apt --fix-broken install lintian
-sudo apt install $(cat dependencies-debian.txt)
+xargs -a dependencies-debian.txt sudo apt install -y
 test -f /usr/share/qubes/marker-vm && sudo apt install qubes-gpg-split
 git submodule update --init
 
 gpg --full-generate-key
 
-./update.sh fix
-./restart_services.sh
+"${stht}/update.sh" fix
+"${stht}/restart_services.sh"
 
 echo "(6/6) done."

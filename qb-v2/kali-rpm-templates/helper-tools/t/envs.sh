@@ -3,7 +3,7 @@ export http_proxy=http://127.0.0.1:8082
 export https_proxy=http://127.0.0.1:8082
 
 export qbp=/opt/qubes-builderv2 		# qbp=qubes builder path
-export qbpht=${qbp}/helper-tools                # qbpht=setup tools helper tools
+export qbpht=${qbp}/helper-tools                # qbpht=builder copy of helper tools
 export st=/opt/t-setup-tools                   	# st=setup tools
 export stht=${st}/helper-tools                  # stht=setup tools helper tools
 
@@ -14,4 +14,4 @@ export qdsk=ED65462EC8D5E4C5
 
 export archive_keyring=/usr/share/keyrings
 export srcs_lists=/etc/apt/sources.list.d
-export trusted_gpgs=/etc/apt/trusted.gpgs.d
+export trusted_gpgs=/etc/apt/trusted.gpg.d

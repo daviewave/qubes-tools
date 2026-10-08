@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+cd "$(dirname "$0")"
 
 echo "Preparing debian-12 based TemplateVM to build kali linux based rpm TemplateVM's..."
 

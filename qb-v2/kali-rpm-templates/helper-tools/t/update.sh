@@ -5,7 +5,7 @@ fix=$1
 echo "updating & upgrading..."
 
 sudo apt update -y
-if [[ ! -e "$fix" ]]; then
+if [[ "$fix" == "fix" ]]; then
   sudo apt --fix-broken upgrade -y
 else
   sudo apt upgrade -y

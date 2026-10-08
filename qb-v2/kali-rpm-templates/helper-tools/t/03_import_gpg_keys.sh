@@ -12,7 +12,7 @@ function proxy_gpg_key_fetch(){
   wget $search_url -e use_proxy=on -e https_proxy=$https_proxy -O ./$key_file
   gpg --import ./$key_file
   gpg --edit-key $key_id
-  mv $key_file $trusted_gpgs
+  sudo mv "$key_file" "$trusted_gpgs/"
 }
 
 echo "(3/6) adding qubes master key, release signing key (4.3), & debian pkgs signing key..."
@@ -24,7 +24,7 @@ gpg --edit-key "${qmsk_id}" #(trust 5)
 #-b-> qubes release sk
 sudo rm "${archive_keyring}/qubes-archive-keyring.gpg" || true
 proxy_gpg_key_fetch $qrsk
-sudo sed -i 's|qubes-archive-keyring-4.3.gpg|qubes-archive-keyring.gpg|g' "${src_lists}/qubes-r4.list"
+sudo sed -i 's|qubes-archive-keyring-4.3.gpg|qubes-archive-keyring.gpg|g' "${srcs_lists}/qubes-r4.list"
 sudo rm "${archive_keyring}/qubes-archive-keyring.gpg" || true
 gpg --export $qrsk | sudo tee "${archive_keyring}/qubes-archive-keyring.gpg" > /dev/null
 
