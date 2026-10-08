@@ -11,7 +11,11 @@
 
 #->(fedora)
 	- install 'nss_db' with dnf
-	- after installing go to /var/lib/misc
-	- use makedb cli to build db files 
-		- command needs to specify the input file to use as a template for db generation
-		- ex cmd: makedb /etc/passwd ./passwd.db
+	- after installing go to /var/db (glibc's nss_db reads /var/db on fedora, not /var/lib/misc)
+	- compile the Makefile (it runs makedb for each of passwd, group, shadow, gshadow, ...)
+		- single file by hand: makedb -o /var/db/passwd.db /etc/passwd
+
+#-- automated --#
+- ../setup_nss_db.sh installs the package, builds the db files, checks root resolves through
+  'getent -s db', and with --switch points nsswitch.conf at db (backing it up first)
+- the db files are a snapshot: rebuild with 'make -C <db dir>' after any user/group change
