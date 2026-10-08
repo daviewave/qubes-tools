@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 export http_proxy=http://127.0.0.1:8082
 export https_proxy=http://127.0.0.1:8082
@@ -6,7 +6,7 @@ export https_proxy=http://127.0.0.1:8082
 sudo apt update -y
 
 #=== 1. apt pkgs ===# (-> ghostscript is first added)
-sudo apt remove avahi-daemon libavahi-core7 libavahi-glib1 python3-cups cups \
+sudo apt remove -y avahi-daemon libavahi-core7 libavahi-glib1 python3-cups cups \
 	cups-common cups-server-common cups-daemon openssh-client speech-dispatcher \
 	openssh-client vim-tiny vim-common vim-common vim-nox libssh-4 exfat-fuse \
 	libssh-gcrypt-4 vim-runtime mesa-vulkan-drivers speech-dispatcher pkexec \
@@ -34,7 +34,7 @@ sudo apt remove avahi-daemon libavahi-core7 libavahi-glib1 python3-cups cups \
 	gnome-keyring libpam-gnome-keyring gnome-themes-extra-data pinentry-gnome3 \
 	libsoup-gnome2.4-1 xfce4-mailwatch-plugin
 
-sudo apt autoremove && sudo apt clean
+sudo apt autoremove -y && sudo apt clean
 sudo apt update -y && sudo apt upgrade -y
 
 
@@ -43,7 +43,7 @@ to_remove=(
 	adduser.conf alsa apache2 apparmor apparmor.d avahi
 	bash_completion.d bindresvport.blacklist binfmt.d
 	chatscripts cups cupshelpers dbus-1 deluser.conf dictionaries-common
-	dnf dpkg emacs environment environment.d fuse.conf gai.confghostscript
+	dnf dpkg emacs environment environment.d fuse.conf gai.conf ghostscript
 	gimp glvnd groff gss host.conf hosts.allow hosts.deny ifplugd
 	ImageMagick-6 iproute2 ipp-usb issue issue.net kernel ld.so.cache
 	ld.so.conf ld.so.conf.d ldap libao.conf libibverbs1 ibverbs-providers
@@ -82,16 +82,16 @@ done
 
 
 #-- fstab --#
-usrlocal_mount=$(grep -n "/usr/local" /etc/gstab | head -n 1 | cut -d ':' -f1)
-removable_mount=$(grep -n "/mnt/removable" /etc/gstab | head -n 1 | cut -d ':' -f1)
+usrlocal_mount=$(grep -n "/usr/local" /etc/fstab | head -n 1 | cut -d ':' -f1)
+removable_mount=$(grep -n "/mnt/removable" /etc/fstab | head -n 1 | cut -d ':' -f1)
 if [ -n "$usrlocal_mount" ]; then
   rmv_line="${usrlocal_mount}d"
-  sudo sed -i "${rmv_line}" /etc/gstab
+  sudo sed -i "${rmv_line}" /etc/fstab
 fi
 
 if [ -n "$removable_mount" ]; then
   rmv_line="${removable_mount}d"
-  sudo sed -i "${rmv_line}" /etc/gstab
+  sudo sed -i "${rmv_line}" /etc/fstab
 fi
 
 #-- ethertypes --#
@@ -167,7 +167,7 @@ sudo sed -i 's|HuaweiAltModeGlobal=0||g' /etc/usb_modeswitch.conf
 #=== 4. systemctl ===#
 sudo systemctl mask sys-fs-fuse-connections.mount
 sudo systemctl stop remote-cryptsetup.target
-sudo systemctl stop remote-cryptsetup.target
+sudo systemctl mask remote-cryptsetup.target
 sudo systemctl stop remote-fs.target
 sudo systemctl mask remote-fs.target
 
@@ -177,8 +177,8 @@ sudo systemctl mask remote-fs.target
 #- chmod 000 /dev/<pkg>
 
 #-- fuse --#
-umount /sys/fs/fuse
-modeprobe -r fuse
+umount /sys/fs/fuse/connections
+modprobe -r fuse
 chmod 000 /dev/fuse
 
 

@@ -15,14 +15,14 @@
 #  systemctl --no-block restart cups
 
 #1, uninstall and disable cups
-sudo dnf remove --noautoremove python3-cups tinyproxy openssh speech-dispatcher \ 
+sudo dnf remove -y --noautoremove python3-cups tinyproxy openssh speech-dispatcher \
   vpnc xl2tpd tpm2-tools libvpl tslib wireplumber vim-common vim-enhanced vulkan-loader libvdpau \
-  usb_modeswitch 
+  usb_modeswitch
 
 rm -rf /etc/cups /etc/ssh /etc/speech-dispatcher /etc/vpnc /etc/xl2tpd /etc/tpm2-tss /etc/vpl \
   /etc/vconsole.conf /etc/ts.conf /etc/wireplumber /etc/vimrc /etc/vulkan \
   /etc/vdpau_wrapper.cfg /etc/usb_modeswitch.conf /etc/tmpfiles.d /etc/unbound/ \
-  /etc/trusted-key.key tmpfiles.d/ krb5.conf*  openfortivpn/ csh.* \
+  /etc/trusted-key.key /etc/krb5.conf*  /etc/openfortivpn/ /etc/csh.* \
   /etc/reader.conf.d /etc/systemd/ /etc/swid /etc/sestatus.conf /etc/services \
   /etc/rsyncd.conf /etc/rc.d/ /etc/printcap /etc/networks /etc/motd.d/ /etc/motd \
   /etc/modules-load.d/ /etc/host.conf /etc/exports /etc/gss /etc/inittab /etc/kernel \
@@ -32,13 +32,13 @@ rm -rf /etc/cups /etc/ssh /etc/speech-dispatcher /etc/vpnc /etc/xl2tpd /etc/tpm2
   /etc/libssh/ /etc/dsniff/ /etc/strongswan/ /etc/polkit-1/ /etc/statetab.d/ \
   /etc/sysconfig/ /etc/sgml/ /etc/passim.conf /etc/kismet/ /etc/kdump* /etc/infiniband-diags/ \
   /etc/glvnd/ /etc/geoclue/ /etc/bluetooth/ /etc/alsa/ /etc/asound.conf /etc/avahi/ \
-  /etc/fuse.conf /etc/gdbinit* /etc/abrt/ /etc/cni/ /etc/conntrackd/ /etc/ 
+  /etc/fuse.conf /etc/gdbinit* /etc/abrt/ /etc/cni/ /etc/conntrackd/
 
 sudo rm -rf /etc/modprobe.d/kvm.conf /etc/modprobe.d/vhost.conf
 
 #echo -e "failure_action = log" | sudo tee libaudit.conf > /dev/null
-echo "failure_action = terminate" | sudo tee libaudit.conf > /dev/null
-echo -e "IPv4\t\t0800\t\t#Internet IP (IPv4)\nARP\t\t0806\t\tether-arp\nLOOP\t\t9000\t\tloopback" | sudo tee /etc/ethertypes
+echo "failure_action = terminate" | sudo tee /etc/libaudit.conf > /dev/null
+printf "IPv4\t\t0800\t\t#Internet IP (IPv4)\nARP\t\t0806\t\tether-arp\nLOOP\t\t9000\t\tloopback\n" | sudo tee /etc/ethertypes > /dev/null
 sudo sed -i '10d' /etc/fstab
 sudo sed -i '16d' /etc/fstab
 sudo sed -i '2d' /etc/adjtime
@@ -49,11 +49,11 @@ sudo sed -i '55d' /etc/NetworkManager/NetworkManager.conf
 sudo systemctl stop sys-fs-fuse-connections.mount
 sudo systemctl mask sys-fs-fuse-connections.mount
 sudo systemctl stop remote-cryptsetup.target
-sudo systemctl stop remote-cryptsetup.target
+sudo systemctl mask remote-cryptsetup.target
 sudo systemctl stop remote-fs.target
 sudo systemctl mask remote-fs.target
 
 
 #== MANUAL ==#
 # 1, update /etc/default
-sudo rm /etc/default/pcscd /etc/default/
+sudo rm -f /etc/default/pcscd
